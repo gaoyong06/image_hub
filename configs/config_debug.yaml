@@ -1,0 +1,25 @@
+server:
+  server_name: "image_hub_debug"
+  port: 6543
+
+log:
+  prefix: "./logs/"
+  name: "image_hub_debug.log"
+  level: 5
+  maxAge: 1
+
+redis:
+  default:
+    host: 127.0.0.1
+    port: 6379
+    pwd: "root"
+    timeout: 2
+
+mysql:
+  default:
+    host: 127.0.0.1
+    port: 3306
+    user: "root"
+    passwd: "root"
+    database: "image_hub"
+
