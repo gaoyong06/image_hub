@@ -20,7 +20,7 @@ var (
 	PortDefault     string = "3306"
 	UserDefault     string = "root"
 	PasswdDefault   string = "root"
-	DatabaseDefault string = "car_hub"
+	DatabaseDefault string = "image_hub"
 )
 
 func Init() {

@@ -3,7 +3,7 @@
  * @Date: 2023-03-18 11:01:46
  * @LastEditors: gaoyong gaoyong06@qq.com
  * @LastEditTime: 2023-03-21 15:19:35
- * @FilePath: \car_hub\pkg\utils\image.go
+ * @FilePath: \image_hub\pkg\utils\image.go
  * @Description: 图片处理工具类
  */
 package utils

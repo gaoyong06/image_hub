@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
-	"car_hub/fake"
-	"car_hub/model"
-	"car_hub/pkg/utils"
-	"car_hub/spiders"
+	"image_hub/model"
+	"image_hub/spiders"
 
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	"github.com/gocolly/colly/v2"
@@ -29,6 +29,9 @@ var (
 	serviceName       string
 	configFile        string
 	defaultConfigFile = "conf/config.yaml"
+
+	// Define the directory to traverse
+	dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
 )
 
 func main() {
@@ -67,7 +70,6 @@ func Init() error {
 	}
 
 	model.Init()
-
 	return nil
 }
 
@@ -76,33 +78,13 @@ func Run() {
 	// 获取可被抓取的域名
 	domains := strings.Split(spiders.Domains, ",")
 
-	// 使用go_proxy_pool 得到的代理ip和port
-	// proxyUrls := []string{
-	// 	"http://117.160.250.133:9999",
-	// 	"http://117.159.15.99:9091",
-	// 	"http://116.113.68.130:9091",
-	// 	"http://221.6.215.202:9091",
-	// 	"http://117.160.250.138:8080",
-	// 	"http://117.160.250.134:8081",
-	// 	"http://117.160.250.131:8899",
-	// 	"http://27.15.232.197:9091",
-	// 	"http://222.139.221.185:9091",
-	// 	"http://42.228.61.245:9091",
-	// }
-
-	// rp, err := proxy.RoundRobinProxySwitcher(proxyUrls...)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	// Collector
 	collector := colly.NewCollector(
 		colly.AllowedDomains(domains...),
 		colly.AllowURLRevisit(),
 	)
-	collector.SetRequestTimeout(120 * time.Second)
-	// collector.SetProxyFunc(rp)
 
+	collector.SetRequestTimeout(120 * time.Second)
 	// Limit the number of threads started by colly to two
 	// when visiting links which domains' matches "*httpbin.*" glob
 	collector.Limit(&colly.LimitRule{
@@ -117,12 +99,8 @@ func Run() {
 		&queue.InMemoryQueueStorage{MaxSize: 1000000}, // Use default queue storage
 	)
 
-	// https://www.che168.com/china/list/ 爬虫
-	chinaListPageSpider := &spiders.ChinaListPageSpider{Name: spiders.UrlTypeChinaListPage}
-
 	collector.OnRequest(func(r *colly.Request) {
 
-		fake.SetChe168Headers(r)
 		urlType := r.Ctx.Get(spiders.UrlTypeKey)
 
 		isEmpty := q.IsEmpty()
@@ -143,94 +121,7 @@ func Run() {
 			log.Infof("Queue.Size() return an error: %v", err)
 		}
 		threads := q.Threads
-
 		log.Infof("OnResponse: Req.ID: %d, urlType:%s, Req.URL: %s, Res.Body.len: %d bytes, q.IsEmpty: %+v, q.Size: %d, q.Threads: %d\n", r.Request.ID, urlType, r.Request.URL, len(r.Body), isEmpty, size, threads)
-
-		// 限流
-		if strings.Contains(r.Request.URL.String(), "www.che168.com/cheerror.html") {
-			panic("Oh yeah. limited!")
-		}
-
-		// 图片保存
-		err = utils.SaveImage(r, spiders.ImageDir)
-		if err != nil {
-			log.Errorf("utils.SaveImage failed. err: %s\n", err)
-		}
-
-		switch urlType {
-
-		// 新车价格API
-		case spiders.UrlTypeNewCarPriceApi:
-			newCarPriceSpider := spiders.NewCarPriceSpider{Name: spiders.UrlTypeNewCarPriceApi}
-			err := newCarPriceSpider.Process(q, r, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("newCarPriceSpider.Process failed. err: %s\n", err)
-			}
-
-		// 二手车价格API结果返回
-		case spiders.UrlTypeUsedCarPriceApi:
-			usedCarPriceSpider := &spiders.UsedCarPriceSpider{Name: spiders.UrlTypeUsedCarPriceApi}
-			err := usedCarPriceSpider.Process(q, r, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("usedCarPriceSpider.Process failed. err: %s\n", err)
-			}
-
-		// 4S店新车含税价格API结果返回
-		case spiders.UrlTypeNewCarPriceIncludeTaxApi:
-			newCarPriceIncludeTaxSpider := &spiders.NewCarPriceIncludeTaxSpider{Name: spiders.UrlTypeNewCarPriceIncludeTaxApi}
-			err := newCarPriceIncludeTaxSpider.Process(q, r, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("newCarPriceIncludeTaxSpider.Process failed. err: %s\n", err)
-			}
-
-		// 二手车在该省最低,最高成交价API结果返回
-		case spiders.UrlTypeUsedCarProvincePriceApi:
-			newCarPriceIncludeTaxSpider := &spiders.NewCarPriceIncludeTaxSpider{Name: spiders.UrlTypeNewCarPriceIncludeTaxApi}
-			err := newCarPriceIncludeTaxSpider.Process(q, r, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("newCarPriceIncludeTaxSpider.Process failed. err: %s\n", err)
-			}
-
-		// 车辆参数API结果返回
-		case spiders.UrlTypeCarParamApi:
-			carParamSpider := spiders.CarParamSpider{Name: spiders.UrlTypeCarParamApi}
-			err := carParamSpider.Process(q, r, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("carParamSpider.Process failed. err: %s\n", err)
-			}
-
-		// 车辆配置API结果返回
-		case spiders.UrlTypeCarConfigApi:
-			carConfigSpider := spiders.CarConfigSpider{Name: spiders.UrlTypeCarConfigApi}
-			err := carConfigSpider.Process(q, r, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("carConfigSpider.Process failed. err: %s\n", err)
-			}
-
-		// 二手车热度指数，推荐理由API结果返回
-		case spiders.UrlTypeUsedCarRankApi:
-			usedCarRankSpider := &spiders.UsedCarRankSpider{Name: spiders.UrlTypeUsedCarRankApi}
-			err := usedCarRankSpider.Process(q, r, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("usedCarRankSpider.Process failed. err: %s\n", err)
-			}
-
-		// 二手车卖家电话API结果返回
-		case spiders.UrlTypeSellerPhoneApi:
-			sellerPhoneSpider := &spiders.SellerPhoneSpider{Name: spiders.UrlTypeSellerPhoneApi}
-			err := sellerPhoneSpider.Process(q, r, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("sellerPhoneSpider.Process failed. err: %s\n", err)
-			}
-
-		// 二手车配置亮点API结果返回
-		case spiders.UrlTypeUsedCarOptionApi:
-			usedCarOptionSpider := &spiders.UsedCarOptionSpider{Name: spiders.UrlTypeUsedCarOptionApi}
-			err := usedCarOptionSpider.Process(q, r, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("usedCarOptionSpider.Process failed. err: %s\n", err)
-			}
-		}
 	})
 
 	collector.OnHTML("html", func(e *colly.HTMLElement) {
@@ -240,50 +131,36 @@ func Run() {
 
 		switch urlType {
 
-		// "全国"列表页url
-		case spiders.UrlTypeChinaListPage:
-
-			err := chinaListPageSpider.Process(q, e, spiders.BaseUrl)
+		// 第1条内容
+		case spiders.FirstPage:
+			firstPageSpider := spiders.NewFirstPage(spiders.FirstPage)
+			err := firstPageSpider.Process(q, e, "")
 			if err != nil {
-				log.Errorf("chinaListPageSpider.Process failed. err: %s\n", err)
-			}
-
-		// 当前选中的城市列表页url
-		case spiders.UrlTypeCityListPage:
-			cityListPageSpider := &spiders.CityListPageSpider{
-				Name: spiders.UrlTypeChinaListPage,
-			}
-			err := cityListPageSpider.Process(q, e, spiders.BaseUrl)
-			if err != nil {
-				log.Errorf("cityListPageSpider.Process failed. err: %s\n", err)
+				log.Errorf("firstPageSpider.Process failed. err: %s\n", err)
 			}
 
-		// 详情页处理
-		case spiders.UrlTypeUsedCarDetailPage:
-			detailPageSpider := &spiders.DetailPageSpider{
-				Name: spiders.UrlTypeUsedCarDetailPage,
-			}
-			err := detailPageSpider.Process(q, e, spiders.BaseUrl)
+		// 第2条内容
+		case spiders.SecondPage:
+			secondPageSpider := spiders.NewSecondPage(spiders.SecondPage)
+			err := secondPageSpider.Process(q, e, "")
 			if err != nil {
-				log.Errorf("detailPageSpider.Process failed. err: %s\n", err)
+				log.Errorf("secondPageSpider.Process failed. err: %s\n", err)
 			}
 
-		// 判断当前返回html为配置参数页
-		case spiders.UrlTypeUsedCarConfigPage:
-			configPageSpider := &spiders.ConfigPageSpider{
-				Name: spiders.UrlTypeUsedCarConfigPage,
-			}
-			err := configPageSpider.Process(q, e, spiders.BaseUrl)
+		// 第3条内容
+		case spiders.ThirdPage:
+			thirdPageSpider := spiders.NewThirdPage(spiders.ThirdPage)
+			err := thirdPageSpider.Process(q, e, "")
 			if err != nil {
-				log.Errorf("configPageSpider.Process failed. err: %s\n", err)
+				log.Errorf("thirdPageSpider.Process failed. err: %s\n", err)
 			}
 
-		// 车辆维修保养记录查询获取VIN码结果返回
-		case spiders.UrlTypeUsedCarVinCodeSearchApi:
-			vinCodeSearchSpider := &spiders.VinCodeSearchSpider{Name: spiders.UrlTypeUsedCarPriceApi}
-			err := vinCodeSearchSpider.Process(q, e, spiders.BaseUrl)
+		// 第4条内容
+		case spiders.FourPage:
+			fourPageSpider := spiders.NewFourPage(spiders.FourPage)
+			err := fourPageSpider.Process(q, e, "")
 			if err != nil {
-				log.Errorf("vinCodeSearchSpider.Process failed. err: %s\n", err)
+				log.Errorf("fourPageSpider.Process failed. err: %s\n", err)
 			}
 		}
 	})
@@ -301,13 +178,75 @@ func Run() {
 		log.Infof("OnError: [%d]%s, %s, %v\n", r.Request.ID, urlType, r.Request.URL, err)
 	})
 
-	// 开始抓取 https://www.che168.com/china/list/
-	err := chinaListPageSpider.AddReqToQueue(q, nil, spiders.BaseUrl)
-	if err != nil {
-		log.Errorf("main chinaListPageSpider.AddReqToQueue failed. error: %+v\n", err.Error())
-		panic(err)
+	// 遍历目录D:\work\wechat_download_data\html\Dump-0421-11-15-39下的所有html文件
+	// html文件名规则为："%Y%m%d_%H%M%S"_"序号.html", 例如: 20230109_111900_1.html
+	// 序号为1时，使用firstPageSpider解析
+	// 序号为2时，使用secondPageSpider解析
+	// 序号为3时，使用thirdPageSpider解析
+	// 序号为4时，使用fourPageSpider解析
+	// 通过判断页面内图片标签数量和页面索引来决定使用的内容匹配规则
+	// 匹配规则一般是：按什么顺序，取文字，取图片，然后组装为一个发布内容，发布至content_service
+	// 网页的视觉上的一个区块(section) 等于content_service里面一个发布内容(post)
+
+	firstPageSpider := spiders.NewFirstPage(spiders.FirstPage)
+	secondPageSpider := spiders.NewSecondPage(spiders.SecondPage)
+	thirdPageSpider := spiders.NewThirdPage(spiders.ThirdPage)
+	fourPageSpider := spiders.NewFourPage(spiders.FourPage)
+
+	// Define the regular expression to match the file names
+	re := regexp.MustCompile(`(\d{8}_\d{6})_(\d+)\.html`)
+
+	// Define the spiders to use for each file
+	spiders := map[int]spiders.Spider{
+		1: firstPageSpider,
+		2: secondPageSpider,
+		3: thirdPageSpider,
+		4: fourPageSpider,
 	}
-	q.Run(collector)
+
+	// Traverse the directory and process each file
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		// Check if the file name matches the regular expression
+		matches := re.FindStringSubmatch(info.Name())
+		if len(matches) != 3 {
+			return nil
+		}
+
+		// Extract the date and page number from the file name
+		// dateStr := matches[1]
+		pageNum, err := strconv.Atoi(matches[2])
+		if err != nil {
+			return err
+		}
+
+		// Get the spider to use for this file
+		spider, ok := spiders[pageNum]
+		if !ok {
+			return fmt.Errorf("no spider defined for page number %d", pageNum)
+		}
+
+		// start a new spider
+		err = spider.AddReqToQueue(q, nil, path)
+		if err != nil {
+			log.Errorf("spider add req queue failed. error: %+v\n", err.Error())
+			panic(err)
+		}
+		q.Run(collector)
+		return nil
+	})
+
+	if err != nil {
+		log.Errorf("error traversing directory: %v", err)
+	}
+
 }
 
 // init flag
@@ -374,7 +313,7 @@ func initLog() error {
 	`WithMaxAge 和 WithRotationCount二者只能设置一个
 	`WithMaxAge` 设置文件清理前的最长保存时间
 	`WithRotationCount` 设置文件清理前最多保存的个数
-	 WithMaxAge WithRotationCount 只能存在一个
+	WithMaxAge WithRotationCount 只能存在一个
 	*/
 	// 下面配置日志每隔 1 分钟轮转一个新文件，保留最近 3 分钟的日志文件，多余的自动清理掉。
 	writer, err := rotatelogs.New(

@@ -3,7 +3,7 @@
  * @Date: 2023-03-07 10:06:06
  * @LastEditors: gaoyong gaoyong06@qq.com
  * @LastEditTime: 2023-03-20 16:21:48
- * @FilePath: \car_hub\fake\headers.go
+ * @FilePath: \image_hub\fake\headers.go
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 package fake
@@ -22,11 +22,6 @@ var uas = [...]string{
 	"Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3",
 	"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.24",
 	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_0) AppleWebKit/536.3",
-}
-
-func SetChe168Headers(r *colly.Request) {
-
-	SetHeaders(r, "www.che168.com", "http://www.che168.com", "https://car.autohome.com.cn")
 }
 
 func GetUserAgent() string {
