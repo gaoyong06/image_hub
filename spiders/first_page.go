@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-24 10:54:31
+ * @LastEditTime: 2023-04-24 19:27:11
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取
  */
@@ -45,15 +45,17 @@ func (s *firstPage) SetName(name string) {
 func (s *firstPage) AddReqToQueue(q *queue.Queue, i interface{}, path string) error {
 
 	pathUrl := fmt.Sprintf("file://%s", path)
+
+	// 解析 URL
 	url, err := url.Parse(pathUrl)
 	if err != nil {
 		log.Errorf("firstPage url.Parse failed. err: %+v\n", err)
 		return err
 	}
 
-	if _, ok := visited.Get(pathUrl); !ok {
+	if _, ok := visited.Get(path); !ok {
 
-		visited.Set(pathUrl, true)
+		visited.Set(path, true)
 		req := &colly.Request{
 			URL:    url,
 			Method: "GET",
@@ -62,15 +64,16 @@ func (s *firstPage) AddReqToQueue(q *queue.Queue, i interface{}, path string) er
 
 		req.Ctx.Put(UrlTypeKey, FirstPage)
 		q.AddRequest(req)
+
 	}
-
 	return nil
-
 }
 
 // 解析将爬取到的数据至一个规范的结构体中
 // e *colly.HTMLElement 或者  *colly.Response
 func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (interface{}, error) {
+
+	fmt.Println("================= firstPage ParseData Run")
 
 	// 解析返回html结果
 	article := &model.Article{}
@@ -83,6 +86,10 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 		return nil, fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
 	}
 
+	fmt.Println("================= e.DOM.Find(#js_content).Text() START =============================")
+	fmt.Println(e.DOM.Find("#js_content").Text())
+	fmt.Println("================= e.DOM.Find(#js_content).Text() END =============================")
+
 	// 文章标题
 	selector = "h1#activity-name"
 	title := e.ChildText(selector)
@@ -94,6 +101,9 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 	// 发布时间
 	selector = "em#publish_time"
 	publishTime := e.ChildText(selector)
+
+	fmt.Printf("=============== selector: %+v\n", e.DOM.Find("#publish_time").Text())
+	fmt.Printf("=============== publishTime: %+v\n", publishTime)
 
 	// 第1行文字
 	section1Text := ""
@@ -273,6 +283,8 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 // e *colly.HTMLElement 或者  *colly.Response
 func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error {
 
+	fmt.Println("================= firstPage Process Run")
+
 	e, ok := i.(*colly.HTMLElement)
 	if !ok {
 		return fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
@@ -285,7 +297,8 @@ func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error
 		return err
 	}
 
-	fmt.Printf("firstPage Process complete. article: %#v", article)
+	log.Infof("firstPage Process complete. article: %#v", article)
+	// fmt.Printf("firstPage Process complete. article: %#v", article)
 
 	// // 保存数据
 	// modelDetailId, err := tblModel.CreateOrUpdate()

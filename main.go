@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -31,7 +32,7 @@ var (
 	defaultConfigFile = "conf/config.yaml"
 
 	// Define the directory to traverse
-	dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
+	dir = "D:/work/wechat_download_data/html/test"
 )
 
 func main() {
@@ -75,19 +76,23 @@ func Init() error {
 
 func Run() {
 
-	// 获取可被抓取的域名
-	domains := strings.Split(spiders.Domains, ",")
+	// request local files
+	// https://github.com/gocolly/colly/blob/master/_examples/local_files/local_files.go
+	t := &http.Transport{}
+	t.RegisterProtocol("file", http.NewFileTransport(http.Dir("/")))
 
 	// Collector
-	collector := colly.NewCollector(
-		colly.AllowedDomains(domains...),
+	// 爬取本地文件时,不用设置AllowedDomains
+
+	c := colly.NewCollector(
 		colly.AllowURLRevisit(),
 	)
 
-	collector.SetRequestTimeout(120 * time.Second)
+	c.WithTransport(t)
+
 	// Limit the number of threads started by colly to two
 	// when visiting links which domains' matches "*httpbin.*" glob
-	collector.Limit(&colly.LimitRule{
+	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		Parallelism: 3,
 		RandomDelay: 16 * time.Second,
@@ -99,7 +104,9 @@ func Run() {
 		&queue.InMemoryQueueStorage{MaxSize: 1000000}, // Use default queue storage
 	)
 
-	collector.OnRequest(func(r *colly.Request) {
+	c.OnRequest(func(r *colly.Request) {
+
+		fmt.Printf("=============== c.OnRequest. url: %v\n", r.URL.String())
 
 		urlType := r.Ctx.Get(spiders.UrlTypeKey)
 
@@ -112,7 +119,9 @@ func Run() {
 		log.Infof("OnRequest: Req.ID: %d, urlType:%s, Req.URL: %s, q.IsEmpty: %+v, q.Size: %d, q.Threads: %d\n", r.ID, urlType, r.URL, isEmpty, size, threads)
 	})
 
-	collector.OnResponse(func(r *colly.Response) {
+	c.OnResponse(func(r *colly.Response) {
+
+		fmt.Println("=============== c.OnResponse")
 
 		urlType := r.Ctx.Get(spiders.UrlTypeKey)
 		isEmpty := q.IsEmpty()
@@ -124,8 +133,9 @@ func Run() {
 		log.Infof("OnResponse: Req.ID: %d, urlType:%s, Req.URL: %s, Res.Body.len: %d bytes, q.IsEmpty: %+v, q.Size: %d, q.Threads: %d\n", r.Request.ID, urlType, r.Request.URL, len(r.Body), isEmpty, size, threads)
 	})
 
-	collector.OnHTML("html", func(e *colly.HTMLElement) {
+	c.OnHTML("html", func(e *colly.HTMLElement) {
 
+		fmt.Println("=============== c.OnHTML ···1111")
 		urlType := e.Response.Ctx.Get(spiders.UrlTypeKey)
 		log.Infof("OnHTML: [%d]%s, %s\n", e.Request.ID, urlType, e.Request.URL)
 
@@ -138,6 +148,7 @@ func Run() {
 			if err != nil {
 				log.Errorf("firstPageSpider.Process failed. err: %s\n", err)
 			}
+			fmt.Println("c.OnHTML 第1条内容, 退出")
 
 		// 第2条内容
 		case spiders.SecondPage:
@@ -166,15 +177,16 @@ func Run() {
 	})
 
 	// OnScraped中获取的urlType参数错误,先忽略
-	// collector.OnScraped(func(r *colly.Response) {
+	c.OnScraped(func(r *colly.Response) {
 
-	// 	urlType := r.Ctx.Get(UrlTypeKey)
-	// 	log.Infof("OnScraped: [%d]%s,%s\n", r.Request.ID, urlType, r.Request.URL)
-	// })
+		// urlType := r.Ctx.Get(UrlTypeKey)
+		// log.Infof("OnScraped: [%d]%s,%s\n", r.Request.ID, urlType, r.Request.URL)
+	})
 
-	collector.OnError(func(r *colly.Response, err error) {
+	c.OnError(func(r *colly.Response, err error) {
 
 		urlType := r.Ctx.Get(spiders.UrlTypeKey)
+		fmt.Printf("OnError: [%d]%s, %s, %v\n", r.Request.ID, urlType, r.Request.URL, err)
 		log.Infof("OnError: [%d]%s, %s, %v\n", r.Request.ID, urlType, r.Request.URL, err)
 	})
 
@@ -187,7 +199,6 @@ func Run() {
 	// 通过判断页面内图片标签数量和页面索引来决定使用的内容匹配规则
 	// 匹配规则一般是：按什么顺序，取文字，取图片，然后组装为一个发布内容，发布至content_service
 	// 网页的视觉上的一个区块(section) 等于content_service里面一个发布内容(post)
-
 	firstPageSpider := spiders.NewFirstPage(spiders.FirstPage)
 	secondPageSpider := spiders.NewSecondPage(spiders.SecondPage)
 	thirdPageSpider := spiders.NewThirdPage(spiders.ThirdPage)
@@ -233,20 +244,27 @@ func Run() {
 			return fmt.Errorf("no spider defined for page number %d", pageNum)
 		}
 
+		// 替换 \ 为 /
+		// D:\work\wechat_download_data\html\test\20220526_111900_1.html
+		// D:/work/wechat_download_data/html/test/20220526_111900_1.html
+		path = strings.ReplaceAll(path, "\\", "/")
+
 		// start a new spider
 		err = spider.AddReqToQueue(q, nil, path)
 		if err != nil {
 			log.Errorf("spider add req queue failed. error: %+v\n", err.Error())
 			panic(err)
 		}
-		q.Run(collector)
+
 		return nil
 	})
 
 	if err != nil {
-		log.Errorf("error traversing directory: %v", err)
-	}
 
+		fmt.Printf("filepath.Walk err: %+v\n", err)
+		panic(err)
+	}
+	q.Run(c)
 }
 
 // init flag
