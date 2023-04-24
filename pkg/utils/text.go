@@ -2,13 +2,14 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-03-12 16:04:07
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-03-24 08:58:47
+ * @LastEditTime: 2023-04-24 11:16:46
  * @FilePath: \image_hub\pkg\utils\text.go
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description:  文字处理工具类
  */
 package utils
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -101,4 +102,10 @@ func ConvertTenThousandRanges(str string) (int, int, error) {
 	}
 
 	return min, max, nil
+}
+
+// 使用正则表达式匹配所有的html标签，并将其替换为空字符串，从而过滤掉所有的html标签
+func FilterHTMLTags(str string) string {
+	re := regexp.MustCompile(`(?i)<[^>]*>`)
+	return re.ReplaceAllString(str, "")
 }

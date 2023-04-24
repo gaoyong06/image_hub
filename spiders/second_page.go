@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-21 18:48:48
+ * @LastEditTime: 2023-04-24 10:56:42
  * @FilePath: \image_hub\spiders\second_page.go
  * @Description: 微信公众号第2条内容抓取
  */
@@ -10,7 +10,6 @@
 package spiders
 
 import (
-	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
 )
 
@@ -36,7 +35,7 @@ func (s *secondPage) SetName(name string) {
 }
 
 // 向队列追求爬取请求
-func (s *secondPage) AddReqToQueue(q *queue.Queue, e *colly.HTMLElement, baseUrl string) error {
+func (s *secondPage) AddReqToQueue(q *queue.Queue, i interface{}, baseUrl string) error {
 
 	return nil
 }
