@@ -6,6 +6,7 @@
         "alloc",
         "cdproto",
         "chromedp",
+        "samber",
         "wechat"
     ]
 }

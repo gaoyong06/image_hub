@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-25 18:01:20
+ * @LastEditTime: 2023-04-25 20:50:53
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取
  */
@@ -52,7 +52,7 @@ func (s *firstPage) AddReqToQueue(q *queue.Queue, i interface{}, path string) er
 	// 解析 URL
 	url, err := url.Parse(pathUrl)
 	if err != nil {
-		log.Errorf("firstPage url.Parse failed. err: %+v\n", err)
+		log.Errorf("url.Parse failed. err: %+v\n", err)
 		return err
 	}
 
@@ -101,7 +101,7 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 	// 所有的文字
 	// 下去取文字的地方有个bug,  本来是"🔥 𝑳𝒐𝒗𝒆 𝒎𝒆 𝒆𝒗𝒆𝒓𝒚𝒅𝒂𝒚",最后取到的是 "❤️\u200d🔥 𝑳𝒐𝒗𝒆 𝒎𝒆 𝒆𝒗𝒆𝒓𝒚𝒅𝒂𝒚"
 	// 文档地址：file:///D:/work/wechat_download_data/html/Dump-0421-11-15-39/20220526_111900_1.html
-	selector = "section span:not(.audio_area,  .audio_area  *), p span"
+	selector = ".wxw-img~ span"
 	var textsStr string
 	e.ForEach(selector, func(i int, h *colly.HTMLElement) {
 
@@ -154,197 +154,135 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 	})
 
 	// 所有的图片
-	// .wxw-img
+	selector = ".wxw-img"
+	imageUrls := e.ChildAttrs(selector, "src")
 
-	// // 第1行文字
-	// section1Text := ""
+	// 删掉最后一张图
+	imageUrls = imageUrls[:len(imageUrls)-1]
 
-	// // 第1组4张图
-	// selector = "section:nth-child(6) p .wxw-img , p+ section > section > p .wxw-img , section:nth-child(3) section section .wxw-img"
-	// section1Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第1组4张图 %+v\n", section1Urls)
+	// 第1行文字
+	section1Text := ""
+	// 第1组4张图
+	section1ImageUrls := imageUrls[0:4]
 
-	// section1 := model.Section{
-	// 	Text:      section1Text,
-	// 	ImageUrls: section1Urls,
-	// }
-	// sections = append(sections, section1)
+	section1 := model.Section{
+		Text:      section1Text,
+		ImageUrls: section1ImageUrls,
+	}
 
-	// // 第2行文字
-	// selector = "#js_content > section:nth-child(4)"
-	// section2Text := e.ChildText(selector)
-	// fmt.Printf("第2组文字 %+v\n", section2Text)
+	// 第2行文字
+	section2Text := texts[0]
+	// 第2组4张图
+	section2ImageUrls := imageUrls[4:8]
+	section2 := model.Section{
+		Text:      section2Text,
+		ImageUrls: section2ImageUrls,
+	}
 
-	// // 第2组4张图
+	// 第3组文字
+	section3Text := texts[1]
+	// 第3组4张图
+	section3ImageUrls := imageUrls[8:12]
+	section3 := model.Section{
+		Text:      section3Text,
+		ImageUrls: section3ImageUrls,
+	}
 
-	// // selector = "section:nth-child(12) p .wxw-img , section:nth-child(10) p .wxw-img"
-	// // #js_content > section:nth-child(6)
-	// // #js_content > section:nth-child(6) .wxw-img, #js_content > section:nth-child(8) .wxw-img
-	// // selector = "#js_content > section:nth-child(6) > section:nth-child(1) > section > section > section > img"
-	// selector = "#js_content > section:nth-child(6) .wxw-img, #js_content > section:nth-child(8) .wxw-img"
-	// section2Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第2组4张图 %+v\n", section2Urls)
+	// 第4组文字
+	section4Text := texts[2]
+	// 第4组4张图
+	section4ImageUrls := imageUrls[12:16]
+	section4 := model.Section{
+		Text:      section4Text,
+		ImageUrls: section4ImageUrls,
+	}
 
-	// return nil, nil
+	// 第5组文字
+	section5Text := texts[3]
+	// 第5组4张图
+	section5ImageUrls := imageUrls[16:20]
+	section5 := model.Section{
+		Text:      section5Text,
+		ImageUrls: section5ImageUrls,
+	}
 
-	// section2 := model.Section{
-	// 	Text:      section2Text,
-	// 	ImageUrls: section2Urls,
-	// }
-	// sections = append(sections, section2)
+	// 第6组文字
+	section6Text := texts[4]
+	// 第6组4张图
+	section6ImageUrls := imageUrls[20:24]
+	section6 := model.Section{
+		Text:      section6Text,
+		ImageUrls: section6ImageUrls,
+	}
 
-	// // 第3组文字
-	// selector = "div#js_content p:nth-child(14) > span:nth-child(3)"
-	// section3Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第3组文字 %+v\n", section3Text)
-	// // 第3组4张图
-	// selector = "section:nth-child(18) .wxw-img , section:nth-child(16) .wxw-img"
-	// section3Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第3组4张图 %+v\n", section3Urls)
+	// 第7组文字
+	section7Text := texts[5]
+	// 第7组4张图
+	section7ImageUrls := imageUrls[24:28]
+	section7 := model.Section{
+		Text:      section7Text,
+		ImageUrls: section7ImageUrls,
+	}
 
-	// section3 := model.Section{
-	// 	Text:      section3Text,
-	// 	ImageUrls: section3Urls,
-	// }
-	// sections = append(sections, section3)
+	// 第8组文字
+	section8Text := texts[6]
+	// 第8组4张图
+	section8ImageUrls := imageUrls[28:32]
+	section8 := model.Section{
+		Text:      section8Text,
+		ImageUrls: section8ImageUrls,
+	}
 
-	// // 第4组文字
-	// selector = "div#js_content p:nth-child(20) > span:nth-child(3)"
-	// section4Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第4组文字 %+v\n", section4Text)
-	// // 第4组4张图
-	// selector = "section:nth-child(24) .wxw-img , p+ section section section p .wxw-img"
-	// section4Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第4组4张图 %+v\n", section4Urls)
+	// 第9组文字
+	section9Text := texts[7]
+	// 第9组4张图
+	section9ImageUrls := imageUrls[32:36]
+	section9 := model.Section{
+		Text:      section9Text,
+		ImageUrls: section9ImageUrls,
+	}
 
-	// section4 := model.Section{
-	// 	Text:      section4Text,
-	// 	ImageUrls: section4Urls,
-	// }
-	// sections = append(sections, section4)
+	// 第10组文字
+	section10Text := texts[8]
+	// 第10组4张图
+	section10ImageUrls := imageUrls[36:40]
+	section10 := model.Section{
+		Text:      section10Text,
+		ImageUrls: section10ImageUrls,
+	}
 
-	// // 第5组文字
-	// selector = "div#js_content section:nth-child(25) > section > section > p:nth-child(2) > span:nth-child(6)"
-	// section5Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第5组文字 %+v\n", section5Text)
+	// 第11组文字
+	section11Text := texts[9]
+	// 第11组16张图
+	section11ImageUrls := imageUrls[40:56]
+	section11 := model.Section{
+		Text:      section11Text,
+		ImageUrls: section11ImageUrls,
+	}
 
-	// // 第5组4张图
-	// selector = "section:nth-child(28) .wxw-img , section:nth-child(26) .wxw-img"
-	// section5Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第5组4张图 %+v\n", section5Urls)
+	// 第12组文字
+	section12Text := texts[10]
+	// 第12组16张图
+	section12ImageUrls := imageUrls[56:72]
+	section12 := model.Section{
+		Text:      section12Text,
+		ImageUrls: section12ImageUrls,
+	}
 
-	// section5 := model.Section{
-	// 	Text:      section5Text,
-	// 	ImageUrls: section5Urls,
-	// }
-	// sections = append(sections, section5)
-
-	// // 第6组文字
-	// selector = "div#js_content section:nth-child(29) > section > section > section:nth-child(4) > span"
-	// section6Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第6组文字 %+v\n", section6Text)
-
-	// // 第6组4张图
-	// selector = "section:nth-child(32) .wxw-img , section:nth-child(30) .wxw-img"
-	// section6Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第6组4张图 %+v\n", section6Urls)
-
-	// section6 := model.Section{
-	// 	Text:      section6Text,
-	// 	ImageUrls: section6Urls,
-	// }
-	// sections = append(sections, section6)
-
-	// // 第7组文字
-	// selector = "div#js_content p:nth-child(34) > span"
-	// section7Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第7组文字 %+v\n", section7Text)
-	// // 第7组4张图
-	// selector = "section:nth-child(36) .wxw-img , section:nth-child(38) .wxw-img"
-	// section7Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第7组4张图 %+v\n", section7Urls)
-
-	// section7 := model.Section{
-	// 	Text:      section7Text,
-	// 	ImageUrls: section7Urls,
-	// }
-	// sections = append(sections, section7)
-
-	// // 第8组文字
-	// selector = "#js_content > section > section > section > section:nth-child(39) > p:nth-child(2) > span:nth-child(11)"
-	// section8Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第8组文字 %+v\n", section8Text)
-	// // 第8组4张图
-	// selector = "section:nth-child(40) p .wxw-img"
-	// section8Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第8组4张图 %+v\n", section8Urls)
-
-	// section8 := model.Section{
-	// 	Text:      section8Text,
-	// 	ImageUrls: section8Urls,
-	// }
-	// sections = append(sections, section8)
-
-	// // 第9组文字
-	// selector = "#js_content > section > section > section > section:nth-child(41) > p:nth-child(2) > span:nth-child(3)"
-	// section9Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第9组文字 %+v\n", section9Text)
-
-	// // 第9组4张图
-	// selector = "section:nth-child(42) p .wxw-img"
-	// section9Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第9组4张图 %+v\n", section9Urls)
-
-	// section9 := model.Section{
-	// 	Text:      section9Text,
-	// 	ImageUrls: section9Urls,
-	// }
-	// sections = append(sections, section9)
-
-	// // 第10组文字-里面有html标签
-	// selector = "#js_content > section > section > section > section:nth-child(43) > section:nth-child(2) > span:nth-child(6)"
-	// section10Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第10组文字 %+v\n", section10Text)
-	// // 第10组4张图
-	// selector = "section:nth-child(44) .wxw-img , section:nth-child(45) .wxw-img , section:nth-child(46) .wxw-img , section:nth-child(47) .wxw-img"
-	// section10Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第10组4张图 %+v\n", section10Urls)
-
-	// section10 := model.Section{
-	// 	Text:      section10Text,
-	// 	ImageUrls: section10Urls,
-	// }
-	// sections = append(sections, section10)
-
-	// // 第11组文字
-	// selector = "#js_content > section > section > section > section:nth-child(48) > section > section > section:nth-child(3) > span > strong > em > span > strong > em > span"
-	// section11Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第11组文字 %+v\n", section11Text)
-	// // 第11组16张图
-	// selector = "section:nth-child(4) section .wxw-img , section:nth-child(5) section .wxw-img , section:nth-child(6) section .wxw-img , section:nth-child(7) section .wxw-img"
-	// section11Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第11组16张图 %+v\n", section11Urls)
-
-	// section11 := model.Section{
-	// 	Text:      section11Text,
-	// 	ImageUrls: section11Urls,
-	// }
-	// sections = append(sections, section11)
-
-	// // 第12组文字(不是"你们要的",是最底部文案)
-	// selector = "#js_content > section > section > section > section:nth-child(48) > section > section > section:nth-child(15) > span:nth-child(2)"
-	// section12Text := utils.FilterHTMLTags(e.ChildText(selector))
-	// fmt.Printf("第12组文字 %+v\n", section12Text)
-	// // 第12组16张图
-	// selector = "section:nth-child(10) section .wxw-img , section:nth-child(11) section .wxw-img , section:nth-child(12) section .wxw-img , section:nth-child(13) section .wxw-img"
-	// section12Urls := e.ChildAttrs(selector, "src")
-	// fmt.Printf("第12组16张图 %+v\n", section12Urls)
-
-	// section12 := model.Section{
-	// 	Text:      section12Text,
-	// 	ImageUrls: section12Urls,
-	// }
-	// sections = append(sections, section12)
+	sections = append(sections,
+		section1,
+		section2,
+		section3,
+		section4,
+		section5,
+		section6,
+		section7,
+		section8,
+		section9,
+		section10,
+		section11,
+		section12,
+	)
 
 	article.Title = title
 	article.Author = author
@@ -374,7 +312,7 @@ func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error
 	}
 
 	log.Infof("firstPage Process complete. article: %#v", article)
-	// fmt.Printf("firstPage Process complete. article: %#v", article)
+	fmt.Printf("firstPage Process complete. article: %#v", article)
 
 	// // 保存数据
 	// modelDetailId, err := tblModel.CreateOrUpdate()
