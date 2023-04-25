@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -212,6 +213,9 @@ func Run() {
 		4: fourPageSpider,
 	}
 
+	// Define the map to store the number of files for each time
+	fileCount := make(map[string]int)
+
 	// Traverse the directory and process each file
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 
@@ -229,16 +233,38 @@ func Run() {
 		}
 
 		// Extract the date and page number from the file name
-		// dateStr := matches[1]
-		pageNum, err := strconv.Atoi(matches[2])
-		if err != nil {
-			return err
-		}
+		dateStr := matches[1]
+		pageNumStr := matches[2]
 
-		// Get the spider to use for this file
-		spider, ok := spiders[pageNum]
-		if !ok {
-			return fmt.Errorf("no spider defined for page number %d", pageNum)
+		// Increment the file count for this time
+		fileCount[dateStr]++
+
+		// Determine which spider to use based on the file count and file name
+		var spider interface{}
+
+		if fileCount[dateStr] <= 4 {
+			pageNum, err := strconv.Atoi(pageNumStr)
+			if err != nil {
+				return err
+			}
+			spider = spiders[pageNum]
+		} else {
+			fileBytes, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			fileContent := string(fileBytes)
+			if strings.Contains(fileContent, "A1") {
+				spider = firstPageSpider
+			} else if strings.Contains(fileContent, "A2") {
+				spider = secondPageSpider
+			} else if strings.Contains(fileContent, "A3") {
+				spider = thirdPageSpider
+			} else if strings.Contains(fileContent, "A4") {
+				spider = fourPageSpider
+			} else {
+				return fmt.Errorf("no matching spider found for file %s", info.Name())
+			}
 		}
 
 		// 替换 \ 为 /
@@ -246,15 +272,62 @@ func Run() {
 		// D:/work/wechat_download_data/html/test/20220526_111900_1.html
 		path = strings.ReplaceAll(path, "\\", "/")
 
-		// start a new spider
-		err = spider.AddReqToQueue(q, nil, path)
+		// Process the file with the selected spider
+		err = spider.(spiders.Spider).Process(q, nil, path)
 		if err != nil {
-			log.Errorf("spider add req queue failed. error: %+v\n", err.Error())
-			panic(err)
+			log.Errorf("%s.Process failed. err: %s\n", spider.(spiders.Spider).Name(), err)
 		}
 
 		return nil
 	})
+
+	if err != nil {
+		log.Errorf("Error while processing files: %s\n", err)
+	}
+
+	// // Traverse the directory and process each file
+	// err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if info.IsDir() {
+	// 		return nil
+	// 	}
+
+	// 	// Check if the file name matches the regular expression
+	// 	matches := re.FindStringSubmatch(info.Name())
+	// 	if len(matches) != 3 {
+	// 		return nil
+	// 	}
+
+	// 	// Extract the date and page number from the file name
+	// 	// dateStr := matches[1]
+	// 	pageNum, err := strconv.Atoi(matches[2])
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	// Get the spider to use for this file
+	// 	spider, ok := spiders[pageNum]
+	// 	if !ok {
+	// 		return fmt.Errorf("no spider defined for page number %d", pageNum)
+	// 	}
+
+	// 	// 替换 \ 为 /
+	// 	// D:\work\wechat_download_data\html\test\20220526_111900_1.html
+	// 	// D:/work/wechat_download_data/html/test/20220526_111900_1.html
+	// 	path = strings.ReplaceAll(path, "\\", "/")
+
+	// 	// start a new spider
+	// 	err = spider.AddReqToQueue(q, nil, path)
+	// 	if err != nil {
+	// 		log.Errorf("spider add req queue failed. error: %+v\n", err.Error())
+	// 		panic(err)
+	// 	}
+
+	// 	return nil
+	// })
 
 	if err != nil {
 

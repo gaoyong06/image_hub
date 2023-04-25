@@ -2,9 +2,9 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-25 20:50:53
+ * @LastEditTime: 2023-04-25 21:34:44
  * @FilePath: \image_hub\spiders\first_page.go
- * @Description: 微信公众号第1条内容抓取
+ * @Description: 微信公众号第1条内容抓取-头像
  */
 
 package spiders
@@ -307,12 +307,12 @@ func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error
 	// 解析返回json结果
 	article, err := s.ParseData(q, e, baseUrl)
 	if err != nil {
-		log.Errorf("firstPage ParseData failed. err: %s, url: %+v\n", err, e.Request.URL.String())
+		log.Errorf("ParseData failed. err: %s, url: %+v\n", err, e.Request.URL.String())
 		return err
 	}
 
-	log.Infof("firstPage Process complete. article: %#v", article)
-	fmt.Printf("firstPage Process complete. article: %#v", article)
+	log.Infof("Process complete. article: %#v", article)
+	fmt.Printf("Process complete. article: %#v", article)
 
 	// // 保存数据
 	// modelDetailId, err := tblModel.CreateOrUpdate()

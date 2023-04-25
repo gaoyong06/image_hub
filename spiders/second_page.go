@@ -2,9 +2,9 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-25 21:16:55
+ * @LastEditTime: 2023-04-25 22:20:43
  * @FilePath: \image_hub\spiders\second_page.go
- * @Description: 微信公众号第2条内容抓取
+ * @Description: 微信公众号第2条内容抓取-背景图
  */
 
 package spiders
@@ -171,7 +171,29 @@ func (s *secondPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (i
 // 2. 解析数据至结构体
 // 3. 保存数据 或 更新数据 或 继续下一层级的请求
 // e *colly.HTMLElement 或者  *colly.Response
-func (s *secondPage) Process(q *queue.Queue, r interface{}, baseUrl string) error {
+func (s *secondPage) Process(q *queue.Queue, i interface{}, baseUrl string) error {
 
+	e, ok := i.(*colly.HTMLElement)
+	if !ok {
+		return fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
+	}
+
+	// 解析返回json结果
+	article, err := s.ParseData(q, e, baseUrl)
+	if err != nil {
+		log.Errorf("parseData failed. err: %s, url: %+v\n", err, e.Request.URL.String())
+		return err
+	}
+
+	log.Infof("Process complete. article: %#v", article)
+	fmt.Printf("Process complete. article: %#v", article)
+
+	// // 保存数据
+	// modelDetailId, err := tblModel.CreateOrUpdate()
+	// if err != nil {
+	// 	log.Errorf("CarParamSpider TblCarParam Create failed. err: %s\n", err)
+	// 	return err
+	// }
+	// log.Infof("CarParam create success. modelDetailId: %d\n", modelDetailId)
 	return nil
 }
