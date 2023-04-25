@@ -121,8 +121,6 @@ func Run() {
 
 	c.OnResponse(func(r *colly.Response) {
 
-		fmt.Println("=============== c.OnResponse")
-
 		urlType := r.Ctx.Get(spiders.UrlTypeKey)
 		isEmpty := q.IsEmpty()
 		size, err := q.Size()
@@ -135,7 +133,6 @@ func Run() {
 
 	c.OnHTML("html", func(e *colly.HTMLElement) {
 
-		fmt.Println("=============== c.OnHTML ···1111")
 		urlType := e.Response.Ctx.Get(spiders.UrlTypeKey)
 		log.Infof("OnHTML: [%d]%s, %s\n", e.Request.ID, urlType, e.Request.URL)
 
