@@ -4,18 +4,18 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
 	"image_hub/model"
 	"image_hub/spiders"
 
+	"github.com/PuerkitoBio/goquery"
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
@@ -188,6 +188,9 @@ func Run() {
 		log.Infof("OnError: [%d]%s, %s, %v\n", r.Request.ID, urlType, r.Request.URL, err)
 	})
 
+	// Determine which spider to use based on the file count and file name
+	var spider spiders.Spider
+
 	// 遍历目录D:\work\wechat_download_data\html\Dump-0421-11-15-39下的所有html文件
 	// html文件名规则为："%Y%m%d_%H%M%S"_"序号.html", 例如: 20230109_111900_1.html
 	// 序号为1时，使用firstPageSpider解析
@@ -205,29 +208,18 @@ func Run() {
 	// Define the regular expression to match the file names
 	re := regexp.MustCompile(`(\d{8}_\d{6})_(\d+)\.html`)
 
-	// Define the spiders to use for each file
-	spiders := map[int]spiders.Spider{
-		1: firstPageSpider,
-		2: secondPageSpider,
-		3: thirdPageSpider,
-		4: fourPageSpider,
-	}
-
-	// Define the map to store the number of files for each time
-	fileCount := make(map[string]int)
-
 	// Traverse the directory and process each file
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 
 		if err != nil {
 			return err
 		}
-		if info.IsDir() {
+		if d.IsDir() {
 			return nil
 		}
 
 		// Check if the file name matches the regular expression
-		matches := re.FindStringSubmatch(info.Name())
+		matches := re.FindStringSubmatch(d.Name())
 		if len(matches) != 3 {
 			return nil
 		}
@@ -235,99 +227,86 @@ func Run() {
 		// Extract the date and page number from the file name
 		dateStr := matches[1]
 		pageNumStr := matches[2]
+		fmt.Printf("dateStr: %+v\n", dateStr)
+		fmt.Printf("pageNumStr: %+v\n", pageNumStr)
+		fmt.Printf("path: %+v\n", path)
 
-		// Increment the file count for this time
-		fileCount[dateStr]++
+		// 打开本地 HTML 文件
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
 
-		// Determine which spider to use based on the file count and file name
-		var spider interface{}
+		// 使用 goquery 解析 HTML
+		doc, err := goquery.NewDocumentFromReader(file)
+		if err != nil {
+			return err
+		}
 
-		if fileCount[dateStr] <= 4 {
-			pageNum, err := strconv.Atoi(pageNumStr)
-			if err != nil {
-				return err
-			}
-			spider = spiders[pageNum]
-		} else {
-			fileBytes, err := ioutil.ReadFile(path)
-			if err != nil {
-				return err
-			}
-			fileContent := string(fileBytes)
-			if strings.Contains(fileContent, "A1") {
+		selector := "meta[property='og:title']"
+		title, isExist := doc.Find(selector).Attr("content")
+		if isExist {
+
+			if strings.Contains(title, "头像") {
 				spider = firstPageSpider
-			} else if strings.Contains(fileContent, "A2") {
+			} else if strings.Contains(title, "背景图") {
 				spider = secondPageSpider
-			} else if strings.Contains(fileContent, "A3") {
+			} else if strings.Contains(title, "壁纸") {
 				spider = thirdPageSpider
-			} else if strings.Contains(fileContent, "A4") {
+			} else if strings.Contains(title, "表情") || strings.Contains(title, "表情包") {
 				spider = fourPageSpider
 			} else {
-				return fmt.Errorf("no matching spider found for file %s", info.Name())
+				return fmt.Errorf("no matching spider found for file %s", d.Name())
 			}
+
+			fmt.Printf("title: %+v, spider: %+v\n", title, spider.GetName())
+
+			// 替换 \ 为 /
+			// D:\work\wechat_download_data\html\test\20220526_111900_1.html
+			// D:/work/wechat_download_data/html/test/20220526_111900_1.html
+			path = strings.ReplaceAll(path, "\\", "/")
+
+			// Process the file with the selected spider
+			err = spider.Process(q, nil, path)
+			if err != nil {
+				return err
+			}
+		} else {
+
+			return fmt.Errorf("no matching content found for file %s", d.Name())
 		}
 
-		// 替换 \ 为 /
-		// D:\work\wechat_download_data\html\test\20220526_111900_1.html
-		// D:/work/wechat_download_data/html/test/20220526_111900_1.html
-		path = strings.ReplaceAll(path, "\\", "/")
+		// dom, err := goquery.NewDocument(path)
+		// if err != nil {
+		// 	log.Fatalln(err)
+		// }
 
-		// Process the file with the selected spider
-		err = spider.(spiders.Spider).Process(q, nil, path)
-		if err != nil {
-			log.Errorf("%s.Process failed. err: %s\n", spider.(spiders.Spider).Name(), err)
-		}
+		// dom.Find("p").Each(func(i int, selection *goquery.Selection) {
+		// 	fmt.Println(selection.Text())
+		// })
+
+		// fileBytes, err := ioutil.ReadFile(path)
+		// if err != nil {
+		// 	return err
+		// }
+
+		// // 根据页面标题判断
+		// // <meta property="og:title" content="𝐒𝐡𝐚𝐫𝐞&#39;&#39; 手机壁纸 | 4.23" />
+		// fileContent := string(fileBytes)
+		// titleRe := regexp.MustCompile(`<meta property="og:title" content="(.+?)"/>`)
+		// titleMatches := titleRe.FindStringSubmatch(fileContent)
+		// if len(titleMatches) != 2 {
+		// 	return fmt.Errorf("no matching content found for file %s", d.Name())
+		// }
+		// title := titleMatches[1]
 
 		return nil
 	})
 
-	if err != nil {
-		log.Errorf("Error while processing files: %s\n", err)
-	}
-
-	// // Traverse the directory and process each file
-	// err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	if info.IsDir() {
-	// 		return nil
-	// 	}
-
-	// 	// Check if the file name matches the regular expression
-	// 	matches := re.FindStringSubmatch(info.Name())
-	// 	if len(matches) != 3 {
-	// 		return nil
-	// 	}
-
-	// 	// Extract the date and page number from the file name
-	// 	// dateStr := matches[1]
-	// 	pageNum, err := strconv.Atoi(matches[2])
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	// Get the spider to use for this file
-	// 	spider, ok := spiders[pageNum]
-	// 	if !ok {
-	// 		return fmt.Errorf("no spider defined for page number %d", pageNum)
-	// 	}
-
-	// 	// 替换 \ 为 /
-	// 	// D:\work\wechat_download_data\html\test\20220526_111900_1.html
-	// 	// D:/work/wechat_download_data/html/test/20220526_111900_1.html
-	// 	path = strings.ReplaceAll(path, "\\", "/")
-
-	// 	// start a new spider
-	// 	err = spider.AddReqToQueue(q, nil, path)
-	// 	if err != nil {
-	// 		log.Errorf("spider add req queue failed. error: %+v\n", err.Error())
-	// 		panic(err)
-	// 	}
-
-	// 	return nil
-	// })
+	// if err != nil {
+	// 	log.Errorf("Error while processing files: %s\n", err)
+	// }
 
 	if err != nil {
 
