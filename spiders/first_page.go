@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-26 11:54:54
+ * @LastEditTime: 2023-04-26 14:31:50
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -21,6 +21,7 @@ import (
 	"github.com/gocolly/colly/v2/queue"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cast"
 )
 
 type firstPage struct {
@@ -80,7 +81,6 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 	article := &model.TblArticle{}
 	var selector string
 	var sections []model.Section
-	// var err error
 
 	e, ok := i.(*colly.HTMLElement)
 	if !ok {
@@ -90,13 +90,38 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 	// 文章标题
 	selector = "h1#activity-name"
 	title := e.ChildText(selector)
+	article.Title = title
 
 	// 作者
 	selector = "a#js_name"
 	author := e.ChildText(selector)
+	article.Author = author
 
 	// 发布时间
 	publishTime, _ := utils.GetPublishTime(e.Text)
+	article.PublishTime = time.Unix(publishTime, 0)
+
+	// <meta content="http://mp.weixin.qq.com/s?__biz=MjM5NzAyMDIwMA==&amp;mid=2653562471&amp;idx=1&amp;sn=5a209eca9a0c9d92d484dadfa516a807&amp;chksm=bd3ed1208a49583679dddb80f504983511b6bc9d63c89242dd3df68daebd587a78b8fea1afa0#rd"/>
+	selector = "meta[property='og:url']"
+	ogUrl := e.ChildAttr(selector, "content")
+	queryParams, err := utils.GetArticleUrlQueryParams(ogUrl)
+	if err != nil {
+		log.Errorf("utils.GetArticleUrlQueryParams failed. ogUrl: %s,  err: %+v\n", ogUrl, err)
+		return nil, err
+	}
+	idx := queryParams.Get("idx")
+	sn := queryParams.Get("sn")
+	biz := queryParams.Get("__biz")
+	mid := queryParams.Get("mid")
+
+	article.Idx = cast.ToInt(idx)
+	article.Sn = sn
+	article.Biz = biz
+	article.Mid = cast.ToInt(mid)
+
+	fmt.Printf("e.Request.URL.String(): %s", e.Request.URL.String())
+
+	article.LocalPath = e.Request.URL.String()
 
 	// 所有的文字
 	// 下去取文字的地方有个bug,  本来是"🔥 𝑳𝒐𝒗𝒆 𝒎𝒆 𝒆𝒗𝒆𝒓𝒚𝒅𝒂𝒚",最后取到的是 "❤️\u200d🔥 𝑳𝒐𝒗𝒆 𝒎𝒆 𝒆𝒗𝒆𝒓𝒚𝒅𝒂𝒚"
@@ -285,10 +310,6 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 		section12,
 	)
 
-	article.Title = title
-	article.Author = author
-	article.PublishTime = time.Unix(publishTime, 0)
-
 	article.Sections = sections
 	return article, nil
 }
@@ -312,20 +333,28 @@ func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error
 		return err
 	}
 
-	log.Infof("Process complete. article: %#v", article)
-	fmt.Printf("Process complete. article: %#v", article)
+	// log.Infof("Process complete. article: %#v", article)
+	// fmt.Println(" ================== 111 START ======================")
+	// fmt.Printf("Process complete. article: %#v", article)
+	// fmt.Println(" ================== 111 END ======================")
 
 	// 类型断言进行转换
-	tblArticle, ok := article.(model.TblArticle)
+	tblArticle, ok := article.(*model.TblArticle)
 	if ok {
 
+		fmt.Println(" ================== 2222")
 		// 保存数据
 		// 保存到本地article
 		sn, err := tblArticle.CreateOrUpdate()
 		if err != nil {
+
+			fmt.Println(" ================== 333")
 			log.Errorf("article.CreateOrUpdate failed. err: %s\n", err)
+			fmt.Printf("article.CreateOrUpdate failed. err: %s\n", err)
 			return err
 		}
+
+		fmt.Println(" ================== 4444")
 		log.Infof("article.CreateOrUpdate success. sn: %d\n", sn)
 
 		// 按照多个section保存至content_service
@@ -334,7 +363,9 @@ func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error
 		return nil
 
 	} else {
-		return fmt.Errorf("Failed to convert article to tblArticle.")
+
+		fmt.Println(" ================== 5555")
+		return fmt.Errorf("failed to convert article to tblArticle")
 	}
 
 	// 保存到

@@ -31,7 +31,7 @@ func Init() {
 		logger.Config{
 			SlowThreshold: time.Second, // 慢 SQL 阈值
 			// LogLevel:                  logger.Info, // 日志级别
-			LogLevel:                  logger.Warn,
+			LogLevel:                  logger.Info,
 			IgnoreRecordNotFoundError: false, // 忽略ErrRecordNotFound（记录未找到）错误
 			Colorful:                  false, // 禁用彩色打印
 		},
@@ -98,7 +98,7 @@ func getDns(name string) string {
 		"tcp(" + host + ":" +
 		port + ")/" +
 		database +
-		"?charset=utf8&parseTime=True&loc=Local"
+		"?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local"
 
 	return dsn
 }

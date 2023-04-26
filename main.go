@@ -146,7 +146,6 @@ func Run() {
 			if err != nil {
 				log.Errorf("firstPageSpider.Process failed. err: %s\n", err)
 			}
-			fmt.Println("c.OnHTML 第1条内容, 退出")
 
 		// 第2条内容
 		case spiders.SecondPage:

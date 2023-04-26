@@ -19,6 +19,7 @@ import (
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cast"
 )
 
 type secondPage struct {
@@ -88,13 +89,34 @@ func (s *secondPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (i
 	// 文章标题
 	selector = "h1#activity-name"
 	title := e.ChildText(selector)
+	article.Title = title
 
 	// 作者
 	selector = "a#js_name"
 	author := e.ChildText(selector)
+	article.Author = author
 
 	// 发布时间
 	publishTime, _ := utils.GetPublishTime(e.Text)
+	article.PublishTime = time.Unix(publishTime, 0)
+
+	// <meta content="http://mp.weixin.qq.com/s?__biz=MjM5NzAyMDIwMA==&amp;mid=2653562471&amp;idx=1&amp;sn=5a209eca9a0c9d92d484dadfa516a807&amp;chksm=bd3ed1208a49583679dddb80f504983511b6bc9d63c89242dd3df68daebd587a78b8fea1afa0#rd"/>
+	selector = "meta[property='og:url']"
+	ogUrl := e.ChildAttr(selector, "content")
+	queryParams, err := utils.GetArticleUrlQueryParams(ogUrl)
+	if err != nil {
+		log.Errorf("utils.GetArticleUrlQueryParams failed. ogUrl: %s,  err: %+v\n", ogUrl, err)
+		return nil, err
+	}
+	idx := queryParams.Get("idx")
+	sn := queryParams.Get("sn")
+	biz := queryParams.Get("__biz")
+	mid := queryParams.Get("mid")
+
+	article.Idx = cast.ToInt(idx)
+	article.Sn = sn
+	article.Biz = biz
+	article.Mid = cast.ToInt(mid)
 
 	// 全部文字
 	// 文字有两种
@@ -186,7 +208,7 @@ func (s *secondPage) Process(q *queue.Queue, i interface{}, baseUrl string) erro
 	}
 
 	log.Infof("Process complete. article: %#v", article)
-	fmt.Printf("Process complete. article: %#v", article)
+	// fmt.Printf("Process complete. article: %#v", article)
 
 	// // 保存数据
 	// modelDetailId, err := tblModel.CreateOrUpdate()
