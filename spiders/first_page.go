@@ -178,6 +178,8 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 
 		return !strings.Contains(val, uselessStr)
 	})
+	fmt.Printf("============ textsStr: %s\n", textsStr)
+	fmt.Printf("============len(texts): %d,  texts: %#v\n", len(texts), texts)
 
 	// 所有的图片
 	selector = ".wxw-img"
