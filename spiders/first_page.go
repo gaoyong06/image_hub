@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-25 21:34:44
+ * @LastEditTime: 2023-04-26 10:52:50
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -101,7 +101,8 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 	// 所有的文字
 	// 下去取文字的地方有个bug,  本来是"🔥 𝑳𝒐𝒗𝒆 𝒎𝒆 𝒆𝒗𝒆𝒓𝒚𝒅𝒂𝒚",最后取到的是 "❤️\u200d🔥 𝑳𝒐𝒗𝒆 𝒎𝒆 𝒆𝒗𝒆𝒓𝒚𝒅𝒂𝒚"
 	// 文档地址：file:///D:/work/wechat_download_data/html/Dump-0421-11-15-39/20220526_111900_1.html
-	selector = ".wxw-img~ span"
+	// selector = ".wxw-img~ span"
+	selector = "span"
 	var textsStr string
 	e.ForEach(selector, func(i int, h *colly.HTMLElement) {
 

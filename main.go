@@ -204,6 +204,7 @@ func Run() {
 	secondPageSpider := spiders.NewSecondPage(spiders.SecondPage)
 	thirdPageSpider := spiders.NewThirdPage(spiders.ThirdPage)
 	fourPageSpider := spiders.NewFourPage(spiders.FourPage)
+	unknownPageSpider := spiders.NewUnknownPage(spiders.UnknownPage)
 
 	// Define the regular expression to match the file names
 	re := regexp.MustCompile(`(\d{8}_\d{6})_(\d+)\.html`)
@@ -257,10 +258,11 @@ func Run() {
 			} else if strings.Contains(title, "表情") || strings.Contains(title, "表情包") {
 				spider = fourPageSpider
 			} else {
-				return fmt.Errorf("no matching spider found for file %s", d.Name())
+				spider = unknownPageSpider
+				log.Warnf("no matching spider found for file %s", d.Name())
 			}
 
-			fmt.Printf("title: %+v, spider: %+v\n", title, spider.GetName())
+			fmt.Printf("==== title: %+v, spider: %+v\n", title, spider.GetName())
 
 			// 替换 \ 为 /
 			// D:\work\wechat_download_data\html\test\20220526_111900_1.html
@@ -268,48 +270,19 @@ func Run() {
 			path = strings.ReplaceAll(path, "\\", "/")
 
 			// Process the file with the selected spider
-			err = spider.Process(q, nil, path)
+			err = spider.AddReqToQueue(q, nil, path)
 			if err != nil {
 				return err
 			}
+
 		} else {
 
 			return fmt.Errorf("no matching content found for file %s", d.Name())
 		}
-
-		// dom, err := goquery.NewDocument(path)
-		// if err != nil {
-		// 	log.Fatalln(err)
-		// }
-
-		// dom.Find("p").Each(func(i int, selection *goquery.Selection) {
-		// 	fmt.Println(selection.Text())
-		// })
-
-		// fileBytes, err := ioutil.ReadFile(path)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// // 根据页面标题判断
-		// // <meta property="og:title" content="𝐒𝐡𝐚𝐫𝐞&#39;&#39; 手机壁纸 | 4.23" />
-		// fileContent := string(fileBytes)
-		// titleRe := regexp.MustCompile(`<meta property="og:title" content="(.+?)"/>`)
-		// titleMatches := titleRe.FindStringSubmatch(fileContent)
-		// if len(titleMatches) != 2 {
-		// 	return fmt.Errorf("no matching content found for file %s", d.Name())
-		// }
-		// title := titleMatches[1]
-
 		return nil
 	})
 
-	// if err != nil {
-	// 	log.Errorf("Error while processing files: %s\n", err)
-	// }
-
 	if err != nil {
-
 		fmt.Printf("filepath.Walk err: %+v\n", err)
 		panic(err)
 	}
