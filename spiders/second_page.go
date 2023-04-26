@@ -75,7 +75,7 @@ func (s *secondPage) AddReqToQueue(q *queue.Queue, i interface{}, path string) e
 func (s *secondPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (interface{}, error) {
 
 	// 解析返回html结果
-	article := &model.Article{}
+	article := &model.TblArticle{}
 	var selector string
 	var sections []model.Section
 	// var err error

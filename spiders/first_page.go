@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-26 10:52:50
+ * @LastEditTime: 2023-04-26 11:54:54
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -77,7 +77,7 @@ func (s *firstPage) AddReqToQueue(q *queue.Queue, i interface{}, path string) er
 func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (interface{}, error) {
 
 	// 解析返回html结果
-	article := &model.Article{}
+	article := &model.TblArticle{}
 	var selector string
 	var sections []model.Section
 	// var err error
@@ -315,6 +315,30 @@ func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error
 	log.Infof("Process complete. article: %#v", article)
 	fmt.Printf("Process complete. article: %#v", article)
 
+	// 类型断言进行转换
+	tblArticle, ok := article.(model.TblArticle)
+	if ok {
+
+		// 保存数据
+		// 保存到本地article
+		sn, err := tblArticle.CreateOrUpdate()
+		if err != nil {
+			log.Errorf("article.CreateOrUpdate failed. err: %s\n", err)
+			return err
+		}
+		log.Infof("article.CreateOrUpdate success. sn: %d\n", sn)
+
+		// 按照多个section保存至content_service
+		// TODO:调用content_service API完成批量写入
+
+		return nil
+
+	} else {
+		return fmt.Errorf("Failed to convert article to tblArticle.")
+	}
+
+	// 保存到
+
 	// // 保存数据
 	// modelDetailId, err := tblModel.CreateOrUpdate()
 	// if err != nil {
@@ -322,5 +346,5 @@ func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error
 	// 	return err
 	// }
 	// log.Infof("CarParam create success. modelDetailId: %d\n", modelDetailId)
-	return nil
+
 }
