@@ -197,25 +197,41 @@ func (s *secondPage) Process(q *queue.Queue, i interface{}, baseUrl string) erro
 
 	e, ok := i.(*colly.HTMLElement)
 	if !ok {
-		return fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
+		return fmt.Errorf("%s invalid type: %T, expected *colly.HTMLElement", s.GetName(), i)
 	}
 
 	// 解析返回json结果
 	article, err := s.ParseData(q, e, baseUrl)
 	if err != nil {
-		log.Errorf("parseData failed. err: %s, url: %+v\n", err, e.Request.URL.String())
+		log.Errorf("%s ParseData failed. err: %s, url: %+v\n", s.GetName(), err, e.Request.URL.String())
 		return err
 	}
 
-	log.Infof("Process complete. article: %#v", article)
-	// fmt.Printf("Process complete. article: %#v", article)
+	// 类型断言进行转换
+	tblArticle, ok := article.(*model.TblArticle)
+	if ok {
 
-	// // 保存数据
-	// modelDetailId, err := tblModel.CreateOrUpdate()
-	// if err != nil {
-	// 	log.Errorf("CarParamSpider TblCarParam Create failed. err: %s\n", err)
-	// 	return err
-	// }
-	// log.Infof("CarParam create success. modelDetailId: %d\n", modelDetailId)
-	return nil
+		// 保存数据
+		// 保存到本地article
+		sn, err := tblArticle.CreateOrUpdate()
+		if err != nil {
+
+			log.Errorf("%s article.CreateOrUpdate failed. err: %s\n", s.GetName(), err)
+			fmt.Printf("%s article.CreateOrUpdate failed. err: %s\n", s.GetName(), err)
+			return err
+		}
+
+		fmt.Printf("%s article.CreateOrUpdate success. sn: %s\n", s.GetName(), sn)
+		log.Infof("%s article.CreateOrUpdate success. sn: %s\n", s.GetName(), sn)
+
+		// 按照多个section保存至content_service
+		// TODO:调用content_service API完成批量写入
+
+		return nil
+
+	} else {
+
+		fmt.Printf("%s failed to convert article to tblArticle", s.GetName())
+		return fmt.Errorf("%s failed to convert article to tblArticle", s.GetName())
+	}
 }

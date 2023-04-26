@@ -16,16 +16,16 @@ import (
 
 // Article 即一篇公众号文章内容
 type TblArticle struct {
-	Mid         int       `json:"mid"`                             // 文章id 每篇文章的唯一标识符
+	Sn          string    `json:"sn"`                              // 一篇文章的唯一标识符
+	Mid         int       `json:"mid"`                             // 每次推送文章的唯一标识符
+	Idx         int       `json:"idx"`                             // 如果一次推送有多篇文章，idx表示当前页面是第几个
 	Biz         string    `json:"biz"`                             // 微信公众号的唯一标识符
-	Idx         int       `json:"idx"`                             // 如果一篇文章有多页内容，idx表示当前页面是第几页
-	Sn          string    `json:"sn"`                              // 一篇文章的唯一标识符，与mid不同的是，sn是加密后的标识符
-	Title       string    `json:"title"`                           // 标题
-	Author      string    `json:"author"`                          // 作者
+	Author      string    `json:"author"`                          // 公众号作者名称
+	Title       string    `json:"title"`                           // 文章标题
 	Tags        []string  `gorm:"serializer:json" json:"tags"`     // 合集标签
 	Sections    []Section `gorm:"serializer:json" json:"sections"` // 文章分段，一篇文章(article)由多个分段(section)组成
-	LocalPath   string    `json:"local_path"`                      // 文章保存路径
-	PublishTime time.Time `json:"publish_time"`                    // 发布时间
+	LocalPath   string    `json:"local_path"`                      // 文章本地保存路径
+	PublishTime time.Time `json:"publish_time"`                    // 文章发布时间
 }
 
 func GetTblArticle() *TblArticle {
@@ -37,9 +37,9 @@ func (t *TblArticle) TableName() string {
 }
 
 // https://gorm.io/zh_CN/docs/advanced_query.html
-func (t *TblArticle) CreateOrUpdate() (int, error) {
+func (t *TblArticle) CreateOrUpdate() (string, error) {
 
-	condModel := TblArticle{Mid: t.Mid}
+	condModel := TblArticle{Sn: t.Sn}
 	assignModel := TblArticle{
 		Biz:         t.Biz,
 		Idx:         t.Idx,
@@ -57,23 +57,23 @@ func (t *TblArticle) CreateOrUpdate() (int, error) {
 		log.Errorf("TblArticle CreateOrUpdate failed. err: %+v\n", err.Error())
 	}
 
-	return t.Mid, err
+	return t.Sn, err
 }
 
 // 另一种实现方式
-// func (t *TblArticle) CreateOrUpdate() (int, error) {
+// func (t *TblArticle) CreateOrUpdate() (string, error) {
 
 // 	var oldArticle TblArticle
 // 	var err error
 
-// 	result := DB.Table(t.TableName()).Where("mid = ?", t.Mid).First(&oldArticle)
+// 	result := DB.Table(t.TableName()).Where("sn = ?", t.Sn).First(&oldArticle)
 // 	if result.Error != nil {
 // 		if result.Error == gorm.ErrRecordNotFound {
 // 			err = DB.Table(t.TableName()).Create(t).Error
-// 			return t.Mid, err
+// 			return t.Sn, err
 // 		}
-// 		return t.Mid, result.Error
+// 		return t.Sn, result.Error
 // 	}
 // 	err = DB.Table(t.TableName()).Save(t).Error
-// 	return t.Mid, err
+// 	return t.Sn, err
 // }

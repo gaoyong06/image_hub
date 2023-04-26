@@ -323,39 +323,32 @@ func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error
 
 	e, ok := i.(*colly.HTMLElement)
 	if !ok {
-		return fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
+		return fmt.Errorf("%s invalid type: %T, expected *colly.HTMLElement", s.GetName(), i)
 	}
 
 	// 解析返回json结果
 	article, err := s.ParseData(q, e, baseUrl)
 	if err != nil {
-		log.Errorf("ParseData failed. err: %s, url: %+v\n", err, e.Request.URL.String())
+		log.Errorf("%s ParseData failed. err: %s, url: %+v\n", s.GetName(), err, e.Request.URL.String())
 		return err
 	}
-
-	// log.Infof("Process complete. article: %#v", article)
-	// fmt.Println(" ================== 111 START ======================")
-	// fmt.Printf("Process complete. article: %#v", article)
-	// fmt.Println(" ================== 111 END ======================")
 
 	// 类型断言进行转换
 	tblArticle, ok := article.(*model.TblArticle)
 	if ok {
 
-		fmt.Println(" ================== 2222")
 		// 保存数据
 		// 保存到本地article
 		sn, err := tblArticle.CreateOrUpdate()
 		if err != nil {
 
-			fmt.Println(" ================== 333")
-			log.Errorf("article.CreateOrUpdate failed. err: %s\n", err)
-			fmt.Printf("article.CreateOrUpdate failed. err: %s\n", err)
+			log.Errorf("%s article.CreateOrUpdate failed. err: %s\n", s.GetName(), err)
+			fmt.Printf("%s article.CreateOrUpdate failed. err: %s\n", s.GetName(), err)
 			return err
 		}
 
-		fmt.Println(" ================== 4444")
-		log.Infof("article.CreateOrUpdate success. sn: %d\n", sn)
+		fmt.Printf("%s article.CreateOrUpdate success. sn: %s\n", s.GetName(), sn)
+		log.Infof("%s article.CreateOrUpdate success. sn: %s\n", s.GetName(), sn)
 
 		// 按照多个section保存至content_service
 		// TODO:调用content_service API完成批量写入
@@ -364,18 +357,7 @@ func (s *firstPage) Process(q *queue.Queue, i interface{}, baseUrl string) error
 
 	} else {
 
-		fmt.Println(" ================== 5555")
-		return fmt.Errorf("failed to convert article to tblArticle")
+		fmt.Printf("%s failed to convert article to tblArticle", s.GetName())
+		return fmt.Errorf("%s failed to convert article to tblArticle", s.GetName())
 	}
-
-	// 保存到
-
-	// // 保存数据
-	// modelDetailId, err := tblModel.CreateOrUpdate()
-	// if err != nil {
-	// 	log.Errorf("CarParamSpider TblCarParam Create failed. err: %s\n", err)
-	// 	return err
-	// }
-	// log.Infof("CarParam create success. modelDetailId: %d\n", modelDetailId)
-
 }
