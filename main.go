@@ -33,9 +33,8 @@ var (
 	defaultConfigFile = "conf/config.yaml"
 
 	// Define the directory to traverse
-	dir = "D:/work/wechat_download_data/html/test"
-	// dir = "D:/work/wechat_download_data/html/test/test1"
-	// dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
+	// dir = "D:/work/wechat_download_data/html/test2"
+	dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
 )
 
 func main() {
@@ -250,14 +249,18 @@ func Run() {
 		title, isExist := doc.Find(selector).Attr("content")
 		if isExist {
 
-			if strings.Contains(title, "头像") {
+			if strings.Contains(title, "头像") && !strings.Contains(title, "背景") {
 				spider = firstPageSpider
-			} else if strings.Contains(title, "背景图") {
+
+			} else if strings.Contains(title, "背景图") || strings.Contains(title, "套图") {
 				spider = secondPageSpider
+
 			} else if strings.Contains(title, "壁纸") {
 				spider = thirdPageSpider
+
 			} else if strings.Contains(title, "表情") || strings.Contains(title, "表情包") {
 				spider = fourPageSpider
+
 			} else {
 				spider = unknownPageSpider
 				log.Warnf("no matching spider found for file %s", d.Name())

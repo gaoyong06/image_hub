@@ -86,6 +86,8 @@ func (s *fourPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (int
 		return nil, fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
 	}
 
+	url := e.Request.URL.String()
+
 	// 文章标题
 	selector = "h1#activity-name"
 	title := e.ChildText(selector)
@@ -99,6 +101,8 @@ func (s *fourPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (int
 	// 发布时间
 	publishTime, _ := utils.GetPublishTime(e.Text)
 	article.PublishTime = time.Unix(publishTime, 0)
+
+	fmt.Printf("================ ParseData: url: %s, title: %s\n", url, title)
 
 	// <meta content="http://mp.weixin.qq.com/s?__biz=MjM5NzAyMDIwMA==&amp;mid=2653562471&amp;idx=1&amp;sn=5a209eca9a0c9d92d484dadfa516a807&amp;chksm=bd3ed1208a49583679dddb80f504983511b6bc9d63c89242dd3df68daebd587a78b8fea1afa0#rd"/>
 	selector = "meta[property='og:url']"

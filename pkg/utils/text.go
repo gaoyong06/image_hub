@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-03-12 16:04:07
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-24 11:16:46
+ * @LastEditTime: 2023-04-27 17:30:10
  * @FilePath: \image_hub\pkg\utils\text.go
  * @Description:  文字处理工具类
  */
@@ -108,4 +108,38 @@ func ConvertTenThousandRanges(str string) (int, int, error) {
 func FilterHTMLTags(str string) string {
 	re := regexp.MustCompile(`(?i)<[^>]*>`)
 	return re.ReplaceAllString(str, "")
+}
+
+// 处理公众号中的文字部分，将前后相邻的字符串和并到同一个数组项中,使用\n分隔
+func JoinAdjacentStrings(texts []string) []string {
+
+	current := ""
+	result := make([]string, len(texts))
+
+	for i := 0; i < len(texts); i++ {
+
+		text := texts[i]
+		if text != "" {
+			current = current + text + "\n"
+		} else {
+			if current != "" {
+
+				lastIdx := i - 1
+				if lastIdx < 0 {
+					lastIdx = 0
+				}
+
+				result[lastIdx] = strings.TrimRight(current, "\n")
+			}
+			current = ""
+		}
+
+		if i == len(texts)-1 {
+			result[i] = current
+		} else {
+			result[i] = ""
+		}
+
+	}
+	return result
 }
