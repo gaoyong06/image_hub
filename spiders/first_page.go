@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-26 14:31:50
+ * @LastEditTime: 2023-04-27 11:07:03
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -20,6 +20,7 @@ import (
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
 	"github.com/samber/lo"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cast"
 )
@@ -119,67 +120,53 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 	article.Biz = biz
 	article.Mid = cast.ToInt(mid)
 
-	fmt.Printf("e.Request.URL.String(): %s", e.Request.URL.String())
-
 	article.LocalPath = e.Request.URL.String()
 
 	// 所有的文字
 	// 下去取文字的地方有个bug,  本来是"🔥 𝑳𝒐𝒗𝒆 𝒎𝒆 𝒆𝒗𝒆𝒓𝒚𝒅𝒂𝒚",最后取到的是 "❤️\u200d🔥 𝑳𝒐𝒗𝒆 𝒎𝒆 𝒆𝒗𝒆𝒓𝒚𝒅𝒂𝒚"
 	// 文档地址：file:///D:/work/wechat_download_data/html/Dump-0421-11-15-39/20220526_111900_1.html
 	// selector = ".wxw-img~ span"
-	selector = "span"
+	// selector = "section, p, span"
+
+	selector = "p[style*='text-align: center']>span, section[style*='text-align: center'] > section > span, section[style*='text-align: center'] > span, span[style*='text-align: center'], span[style*='text-decoration: underline;']"
 	var textsStr string
+
 	e.ForEach(selector, func(i int, h *colly.HTMLElement) {
 
-		nodes := h.DOM.Nodes
-		for _, n := range nodes {
-
-			if n.Attr[0].Key == "style" {
-
-				// 中间各个区块的名称
-				if strings.Contains(n.Attr[0].Val, "text-align: center;") {
-
-					textsStr = textsStr + h.Text
-					break
-				}
-
-				// 倒数第3个文字：真人头像，倒数第2个文字：你们要的
-				if strings.Contains(n.Attr[0].Val, "text-decoration: underline") {
-					textsStr = textsStr + h.Text
-					break
-				}
-			} else {
-				textsStr = textsStr + "\t"
-				break
-			}
-
-			// 最后1行文字：我好想你啊 这句话无论谁和我说起 我都会想要掉眼泪 我就觉得被人惦记 真好啊
-			// 无法通过 style="font-size: 12px;color: rgb(73, 73, 73);font-family: Optima-Regular, PingFangTC-light;" 这匹配, 这个样式不是固定的
-			// 例如: 下面这个
-			// https://mp.weixin.qq.com/s/nXAfWugJouIEQ4hhbAcStg
-			// 目前通过节点的索引号，和文字长度来判断
-			if i > 60 && len(h.Text) > 20 {
-				textsStr = textsStr + h.Text
-				break
-			} else {
-				textsStr = textsStr + "\t"
-				break
-			}
+		pText := h.Text
+		if len(h.Text) > 0 {
+			textsStr = textsStr + pText + "\n"
+		} else {
+			textsStr = textsStr + "\t"
 		}
+
 	})
+
+	textsStr = strings.TrimRight(textsStr, "\n")
 
 	texts := strings.FieldsFunc(textsStr, func(r rune) bool {
 		return r == '\t'
 	})
 
-	// 过滤掉"你们要的"
-	uselessStr := "你们要的"
-	texts = lo.Filter(texts, func(val string, idx int) bool {
+	// 过滤掉所有的空字符串
+	texts = lo.Filter(texts, func(text string, idx int) bool {
 
-		return !strings.Contains(val, uselessStr)
+		text = strings.ReplaceAll(text, "\n", "")
+		text = strings.ReplaceAll(text, " ", "")
+		if len(text) == 0 {
+			return false
+		} else {
+			return true
+		}
 	})
-	fmt.Printf("============ textsStr: %s\n", textsStr)
-	fmt.Printf("============len(texts): %d,  texts: %#v\n", len(texts), texts)
+
+	// 过滤掉"你们要的"
+	uselessStr := "\n你们要的"
+	lo.ForEach(texts, func(text string, idx int) {
+
+		texts[idx] = strings.Trim(text, "\n")
+		texts[idx] = strings.Replace(texts[idx], uselessStr, "", -1)
+	})
 
 	// 所有的图片
 	selector = ".wxw-img"
