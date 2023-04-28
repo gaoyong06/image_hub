@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-28 16:47:01
+ * @LastEditTime: 2023-04-28 17:33:09
  * @FilePath: \image_hub\spiders\base_spider.go
  * @Description: 公众号页面基础爬虫结构体
  */
@@ -13,12 +13,44 @@ import (
 	"image_hub/model"
 	"image_hub/pkg/utils"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
+	cmap "github.com/orcaman/concurrent-map/v2"
+	lop "github.com/samber/lo/parallel"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cast"
+)
+
+var (
+
+	// 已访问的url,避免重复访问
+	visited = cmap.New[bool]()
+	// make(map[string]bool)
+
+	// tag内的需要被替换为空的特殊字符
+	tagDirtyTexts = []string{
+		"#",
+		"☺︎",
+	}
+
+	// 文章中需要被过滤的文本内容，文章含有下面文字的行,这一行将会过滤掉
+	sectionDirtyTexts = []string{
+		"微信扫一扫关注该公众号",
+		"微信号",
+		"功能介绍",
+		"图源",
+		"来自",
+		"👇🏻👇🏻👇🏻",
+		"@",
+		"©️",
+		"cr",
+		"你们要的",
+		"\u200d\u200d",
+		"转自",
+	}
 )
 
 // 定义公众号页面基础爬虫结构体
@@ -80,8 +112,6 @@ func (b *baseSpider) AddReqToQueue(q *queue.Queue, i interface{}, path string) e
 // baseUrl 请求的基准url,目的是为页面内的相对地址补全为完整的地址
 func (b *baseSpider) ParseData(q *queue.Queue, i interface{}, baseUrl string) (interface{}, error) {
 
-	fmt.Println("============================== baseSpider ParseData =============================")
-
 	// 解析返回html结果
 	article := &model.TblArticle{}
 	var selector string
@@ -104,6 +134,15 @@ func (b *baseSpider) ParseData(q *queue.Queue, i interface{}, baseUrl string) (i
 	// 收录于合集
 	selector = ".article-tag__item"
 	tags := e.ChildTexts(selector)
+
+	lop.ForEach(tags, func(tag string, i int) {
+
+		lop.ForEach(tagDirtyTexts, func(text string, j int) {
+			tag = strings.ReplaceAll(tag, text, "")
+		})
+		tags[i] = tag
+	})
+
 	article.Tags = tags
 
 	// 发布时间

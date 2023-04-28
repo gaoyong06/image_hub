@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-28 16:51:14
+ * @LastEditTime: 2023-04-28 17:30:00
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -21,22 +21,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 )
-
-// 需要被过滤的文本内容，含有下面文字的行,将会被过滤掉
-var dirtyTexts = []string{
-	"微信扫一扫关注该公众号",
-	"微信号",
-	"功能介绍",
-	"图源",
-	"来自",
-	"👇🏻👇🏻👇🏻",
-	"@",
-	"©️",
-	"cr",
-	"你们要的",
-	"\u200d\u200d",
-	"转自",
-}
 
 type firstPage struct {
 	*baseSpider
@@ -110,7 +94,7 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 	// 过滤字符串
 	for i := len(texts) - 1; i >= 0; i-- {
 		if len(texts[i]) > 0 {
-			for _, dirtyText := range dirtyTexts {
+			for _, dirtyText := range sectionDirtyTexts {
 				if strings.Contains(texts[i], dirtyText) {
 					texts[i] = ""
 					break

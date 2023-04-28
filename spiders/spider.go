@@ -10,14 +10,6 @@ package spiders
 
 import (
 	"github.com/gocolly/colly/v2/queue"
-	cmap "github.com/orcaman/concurrent-map/v2"
-)
-
-var (
-
-	// 已访问的url,避免重复访问
-	visited = cmap.New[bool]()
-	// make(map[string]bool)
 )
 
 type Spider interface {
