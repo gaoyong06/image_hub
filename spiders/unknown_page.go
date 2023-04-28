@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-26 10:37:24
+ * @LastEditTime: 2023-04-28 16:30:26
  * @FilePath: \image_hub\spiders\unknown_page.go
  * @Description: 微信公众号第1条内容抓取-不处理的页面
  */
@@ -52,7 +52,7 @@ func (s *unknownPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (
 // 2. 解析数据至结构体
 // 3. 保存数据 或 更新数据 或 继续下一层级的请求
 // e *colly.HTMLElement 或者  *colly.Response
-func (s *unknownPage) Process(q *queue.Queue, i interface{}, baseUrl string) error {
+func (s *unknownPage) Process(a Spider, q *queue.Queue, i interface{}, baseUrl string) error {
 
 	return nil
 }

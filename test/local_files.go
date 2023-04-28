@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-24 14:29:12
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-24 14:52:10
+ * @LastEditTime: 2023-04-28 11:35:35
  * @FilePath: \image_hub\local_files.go
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,12 +11,13 @@ package test
 import (
 	"fmt"
 	"net/http"
+	"testing"
 
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
 )
 
-func main() {
+func TestLocalFiles(i *testing.T) {
 
 	// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	// if err != nil {

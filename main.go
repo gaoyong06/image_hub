@@ -33,8 +33,8 @@ var (
 	defaultConfigFile = "conf/config.yaml"
 
 	// Define the directory to traverse
-	// dir = "D:/work/wechat_download_data/html/test2"
-	dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
+	dir = "D:/work/wechat_download_data/html/test3"
+	// dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
 )
 
 func main() {
@@ -143,7 +143,7 @@ func Run() {
 		// 第1条内容
 		case spiders.FirstPage:
 			firstPageSpider := spiders.NewFirstPage(spiders.FirstPage)
-			err := firstPageSpider.Process(q, e, "")
+			err := firstPageSpider.Process(firstPageSpider, q, e, "")
 			if err != nil {
 				log.Errorf("firstPageSpider.Process failed. err: %s\n", err)
 			}
@@ -151,7 +151,7 @@ func Run() {
 		// 第2条内容
 		case spiders.SecondPage:
 			secondPageSpider := spiders.NewSecondPage(spiders.SecondPage)
-			err := secondPageSpider.Process(q, e, "")
+			err := secondPageSpider.Process(secondPageSpider, q, e, "")
 			if err != nil {
 				log.Errorf("secondPageSpider.Process failed. err: %s\n", err)
 			}
@@ -159,7 +159,7 @@ func Run() {
 		// 第3条内容
 		case spiders.ThirdPage:
 			thirdPageSpider := spiders.NewThirdPage(spiders.ThirdPage)
-			err := thirdPageSpider.Process(q, e, "")
+			err := thirdPageSpider.Process(thirdPageSpider, q, e, "")
 			if err != nil {
 				log.Errorf("thirdPageSpider.Process failed. err: %s\n", err)
 			}
@@ -167,7 +167,7 @@ func Run() {
 		// 第4条内容
 		case spiders.FourPage:
 			fourPageSpider := spiders.NewFourPage(spiders.FourPage)
-			err := fourPageSpider.Process(q, e, "")
+			err := fourPageSpider.Process(fourPageSpider, q, e, "")
 			if err != nil {
 				log.Errorf("fourPageSpider.Process failed. err: %s\n", err)
 			}

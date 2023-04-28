@@ -45,5 +45,5 @@ type Spider interface {
 	// 3. 保存数据 或 更新数据 或 继续下一层级的请求
 	// e  当前爬虫请求的返回结果 *colly.HTMLElement 或者  *colly.Response
 	// baseUrl 请求的基准url,目的是为页面内的相对地址补全为完整的地址
-	Process(q *queue.Queue, i interface{}, baseUrl string) error
+	Process(s Spider, q *queue.Queue, i interface{}, baseUrl string) error
 }
