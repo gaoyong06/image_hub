@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-21 18:19:58
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-26 10:37:57
+ * @LastEditTime: 2023-05-04 11:43:29
  * @FilePath: \image_hub\spiders\constants.go
  * @Description: 常量定义
  */
@@ -37,4 +37,9 @@ const (
 
 	// 不处理的页面
 	UnknownPage = "unknownPage"
+
+	// 独立页面
+	OnePage = "OnePage"
 )
+
+const LocalPathPrefix string = "D:/work/wechat_download_data/images\\"

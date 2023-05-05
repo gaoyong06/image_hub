@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-28 17:30:00
+ * @LastEditTime: 2023-05-04 11:02:20
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -135,9 +135,25 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 
 	// fmt.Printf("================ 最终使用的texts: url: %s, title: %s, len(texts): %d,  texts: %#v\n", url, title, len(texts), texts)
 
+	// <img class="profile_avatar" id="js_profile_qrcode_img" src="" alt="">
+	// <img class="we-emoji">
+	// <img id="js_pc_weapp_code_img" />
+	// <img id="js_pc_qr_code_img" class="qr_code_pc_img" />
+
 	// 所有的图片
-	selector = ".wxw-img"
+	// selector = ".wxw-img"
+	selector = "img:not(.profile_avatar):not(.we-emoji):not(#js_pc_weapp_code_img):not(#js_pc_qr_code_img)"
 	imageUrls := e.ChildAttrs(selector, "src")
+
+	// 将本地图片地址中的D:/work/wechat_download_data/images\ 替换为/images/
+	lo.ForEach(imageUrls, func(url string, idx int) {
+		imageUrls[idx] = strings.Replace(url, LocalPathPrefix, "/images/", 1)
+	})
+
+	// 剔除以.gif结尾的字符串
+	imageUrls = lo.Filter(imageUrls, func(imageUrl string, idx int) bool {
+		return !strings.HasSuffix(imageUrl, ".gif")
+	})
 
 	// 一共有72张图
 	if len(imageUrls) >= 72 {
@@ -270,7 +286,7 @@ func (s *firstPage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (in
 		)
 	} else {
 		log.Warningf("imageUrls count error. : url: %s, title: %s, len(texts): %d \n", url, title, len(imageUrls))
-		fmt.Printf("================ WARNING imageUrls count error. : url: %s, title: %s, len(texts): %d \n", url, title, len(imageUrls))
+		fmt.Printf("================ WARNING imageUrls count error. : url: %s, title: %s, len(imageUrls): %d \n", url, title, len(imageUrls))
 	}
 
 	article.Sections = sections

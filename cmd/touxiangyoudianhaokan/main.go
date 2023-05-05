@@ -33,8 +33,8 @@ var (
 	defaultConfigFile = "conf/config.yaml"
 
 	// Define the directory to traverse
-	// dir = "D:/work/wechat_download_data/html/test4"
-	dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
+	dir = "D:/work/wechat_download_data/html/test4"
+	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-45-37"
 )
 
 func main() {
@@ -138,40 +138,12 @@ func Run() {
 		urlType := e.Response.Ctx.Get(spiders.UrlTypeKey)
 		log.Infof("OnHTML: [%d]%s, %s\n", e.Request.ID, urlType, e.Request.URL)
 
-		switch urlType {
-
-		// 第1条内容
-		case spiders.FirstPage:
-			firstPageSpider := spiders.NewFirstPage(spiders.FirstPage)
-			err := firstPageSpider.Process(firstPageSpider, q, e, "")
-			if err != nil {
-				log.Errorf("firstPageSpider.Process failed. err: %s\n", err)
-			}
-
-		// 第2条内容
-		case spiders.SecondPage:
-			secondPageSpider := spiders.NewSecondPage(spiders.SecondPage)
-			err := secondPageSpider.Process(secondPageSpider, q, e, "")
-			if err != nil {
-				log.Errorf("secondPageSpider.Process failed. err: %s\n", err)
-			}
-
-		// 第3条内容
-		case spiders.ThirdPage:
-			thirdPageSpider := spiders.NewThirdPage(spiders.ThirdPage)
-			err := thirdPageSpider.Process(thirdPageSpider, q, e, "")
-			if err != nil {
-				log.Errorf("thirdPageSpider.Process failed. err: %s\n", err)
-			}
-
-		// 第4条内容
-		case spiders.FourPage:
-			fourPageSpider := spiders.NewFourPage(spiders.FourPage)
-			err := fourPageSpider.Process(fourPageSpider, q, e, "")
-			if err != nil {
-				log.Errorf("fourPageSpider.Process failed. err: %s\n", err)
-			}
+		onePageSpider := spiders.NewOnePage(spiders.OnePage)
+		err := onePageSpider.Process(onePageSpider, q, e, "")
+		if err != nil {
+			log.Errorf("onePageSpider.Process failed. err: %s\n", err)
 		}
+
 	})
 
 	// OnScraped中获取的urlType参数错误,先忽略
@@ -189,7 +161,7 @@ func Run() {
 	})
 
 	// Determine which spider to use based on the file count and file name
-	var spider spiders.Spider
+	spider := spiders.NewOnePage(spiders.OnePage)
 
 	// 遍历目录D:\work\wechat_download_data\html\Dump-0421-11-15-39下的所有html文件
 	// html文件名规则为："%Y%m%d_%H%M%S"_"序号.html", 例如: 20230109_111900_1.html
@@ -200,11 +172,11 @@ func Run() {
 	// 通过判断页面内图片标签数量和页面索引来决定使用的内容匹配规则
 	// 匹配规则一般是：按什么顺序，取文字，取图片，然后组装为一个发布内容，发布至content_service
 	// 网页的视觉上的一个区块(section) 等于content_service里面一个发布内容(post)
-	firstPageSpider := spiders.NewFirstPage(spiders.FirstPage)
-	secondPageSpider := spiders.NewSecondPage(spiders.SecondPage)
-	thirdPageSpider := spiders.NewThirdPage(spiders.ThirdPage)
-	fourPageSpider := spiders.NewFourPage(spiders.FourPage)
-	unknownPageSpider := spiders.NewUnknownPage(spiders.UnknownPage)
+	// firstPageSpider := spiders.NewFirstPage(spiders.FirstPage)
+	// secondPageSpider := spiders.NewSecondPage(spiders.SecondPage)
+	// thirdPageSpider := spiders.NewThirdPage(spiders.ThirdPage)
+	// fourPageSpider := spiders.NewFourPage(spiders.FourPage)
+	// unknownPageSpider := spiders.NewUnknownPage(spiders.UnknownPage)
 
 	// Define the regular expression to match the file names
 	re := regexp.MustCompile(`(\d{8}_\d{6})_(\d+)\.html`)
@@ -246,43 +218,21 @@ func Run() {
 		}
 
 		selector := "meta[property='og:title']"
-		title, isExist := doc.Find(selector).Attr("content")
-		if isExist {
+		title, _ := doc.Find(selector).Attr("content")
 
-			if strings.Contains(title, "头像") && !strings.Contains(title, "背景") {
-				spider = firstPageSpider
+		fmt.Printf("==== title: %+v, spider: %+v\n", title, spider.GetName())
 
-			} else if strings.Contains(title, "背景图") || strings.Contains(title, "套图") {
-				spider = secondPageSpider
+		// 替换 \ 为 /
+		// D:\work\wechat_download_data\html\test\20220526_111900_1.html
+		// D:/work/wechat_download_data/html/test/20220526_111900_1.html
+		path = strings.ReplaceAll(path, "\\", "/")
 
-			} else if strings.Contains(title, "壁纸") {
-				spider = thirdPageSpider
-
-			} else if strings.Contains(title, "表情") || strings.Contains(title, "表情包") {
-				spider = fourPageSpider
-
-			} else {
-				spider = unknownPageSpider
-				log.Warnf("no matching spider found for file %s", d.Name())
-			}
-
-			fmt.Printf("==== title: %+v, spider: %+v\n", title, spider.GetName())
-
-			// 替换 \ 为 /
-			// D:\work\wechat_download_data\html\test\20220526_111900_1.html
-			// D:/work/wechat_download_data/html/test/20220526_111900_1.html
-			path = strings.ReplaceAll(path, "\\", "/")
-
-			// Process the file with the selected spider
-			err = spider.AddReqToQueue(q, nil, path)
-			if err != nil {
-				return err
-			}
-
-		} else {
-
-			return fmt.Errorf("no matching content found for file %s", d.Name())
+		// Process the file with the selected spider
+		err = spider.AddReqToQueue(q, nil, path)
+		if err != nil {
+			return err
 		}
+
 		return nil
 	})
 
