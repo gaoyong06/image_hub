@@ -194,31 +194,36 @@ func (b *baseSpider) Process(s Spider, q *queue.Queue, i interface{}, baseUrl st
 		return err
 	}
 
-	// 类型断言进行转换
-	tblArticle, ok := article.(*model.TblArticle)
-	if ok {
+	if article != nil {
 
-		// 保存数据
-		// 保存到本地article
-		sn, err := tblArticle.CreateOrUpdate()
-		if err != nil {
+		// 类型断言进行转换
+		tblArticle, ok := article.(*model.TblArticle)
+		if ok {
 
-			log.Errorf("%s article.CreateOrUpdate failed. err: %s\n", s.GetName(), err)
-			fmt.Printf("%s article.CreateOrUpdate failed. err: %s\n", s.GetName(), err)
-			return err
+			// 保存数据
+			// 保存到本地article
+			sn, err := tblArticle.CreateOrUpdate()
+			if err != nil {
+
+				log.Errorf("%s article.CreateOrUpdate failed. err: %s\n", s.GetName(), err)
+				fmt.Printf("%s article.CreateOrUpdate failed. err: %s\n", s.GetName(), err)
+				return err
+			}
+
+			fmt.Printf("%s article.CreateOrUpdate success. sn: %s\n", s.GetName(), sn)
+			log.Infof("%s article.CreateOrUpdate success. sn: %s\n", s.GetName(), sn)
+
+			// 按照多个section保存至content_service
+			// TODO:调用content_service API完成批量写入
+
+			return nil
+
+		} else {
+
+			fmt.Printf("%s failed to convert article to tblArticle", s.GetName())
+			return fmt.Errorf("%s failed to convert article to tblArticle", s.GetName())
 		}
-
-		fmt.Printf("%s article.CreateOrUpdate success. sn: %s\n", s.GetName(), sn)
-		log.Infof("%s article.CreateOrUpdate success. sn: %s\n", s.GetName(), sn)
-
-		// 按照多个section保存至content_service
-		// TODO:调用content_service API完成批量写入
-
-		return nil
-
-	} else {
-
-		fmt.Printf("%s failed to convert article to tblArticle", s.GetName())
-		return fmt.Errorf("%s failed to convert article to tblArticle", s.GetName())
 	}
+
+	return nil
 }

@@ -161,23 +161,12 @@ func Run() {
 	})
 
 	// Determine which spider to use based on the file count and file name
-	spider := spiders.NewOnePage(spiders.OnePage)
+	var spider spiders.Spider
+	onePageSpider := spiders.NewOnePage(spiders.OnePage)
+	unknownPageSpider := spiders.NewUnknownPage(spiders.UnknownPage)
 
 	// 遍历目录D:\work\wechat_download_data\html\Dump-0421-11-15-39下的所有html文件
 	// html文件名规则为："%Y%m%d_%H%M%S"_"序号.html", 例如: 20230109_111900_1.html
-	// 序号为1时，使用firstPageSpider解析
-	// 序号为2时，使用secondPageSpider解析
-	// 序号为3时，使用thirdPageSpider解析
-	// 序号为4时，使用fourPageSpider解析
-	// 通过判断页面内图片标签数量和页面索引来决定使用的内容匹配规则
-	// 匹配规则一般是：按什么顺序，取文字，取图片，然后组装为一个发布内容，发布至content_service
-	// 网页的视觉上的一个区块(section) 等于content_service里面一个发布内容(post)
-	// firstPageSpider := spiders.NewFirstPage(spiders.FirstPage)
-	// secondPageSpider := spiders.NewSecondPage(spiders.SecondPage)
-	// thirdPageSpider := spiders.NewThirdPage(spiders.ThirdPage)
-	// fourPageSpider := spiders.NewFourPage(spiders.FourPage)
-	// unknownPageSpider := spiders.NewUnknownPage(spiders.UnknownPage)
-
 	// Define the regular expression to match the file names
 	re := regexp.MustCompile(`(\d{8}_\d{6})_(\d+)\.html`)
 
@@ -218,21 +207,37 @@ func Run() {
 		}
 
 		selector := "meta[property='og:title']"
-		title, _ := doc.Find(selector).Attr("content")
+		title, isExist := doc.Find(selector).Attr("content")
 
-		fmt.Printf("==== title: %+v, spider: %+v\n", title, spider.GetName())
+		if isExist {
 
-		// 替换 \ 为 /
-		// D:\work\wechat_download_data\html\test\20220526_111900_1.html
-		// D:/work/wechat_download_data/html/test/20220526_111900_1.html
-		path = strings.ReplaceAll(path, "\\", "/")
+			if strings.Contains(title, "头像") ||
+				strings.Contains(title, "背景") ||
+				strings.Contains(title, "背景图") ||
+				strings.Contains(title, "套图") ||
+				strings.Contains(title, "壁纸") ||
+				strings.Contains(title, "表情") ||
+				strings.Contains(title, "表情包") {
+				spider = onePageSpider
+			} else {
+				spider = unknownPageSpider
+				log.Warnf("no matching spider found for file %s", d.Name())
+			}
 
-		// Process the file with the selected spider
-		err = spider.AddReqToQueue(q, nil, path)
-		if err != nil {
-			return err
+			fmt.Printf("==== title: %+v, spider: %+v\n", title, spider.GetName())
+			// 替换 \ 为 /
+			// D:\work\wechat_download_data\html\test\20220526_111900_1.html
+			// D:/work/wechat_download_data/html/test/20220526_111900_1.html
+			path = strings.ReplaceAll(path, "\\", "/")
+
+			// Process the file with the selected spider
+			err = spider.AddReqToQueue(q, nil, path)
+			if err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("no matching content found for file %s", d.Name())
 		}
-
 		return nil
 	})
 
@@ -271,6 +276,7 @@ func initFlag() error {
 }
 
 func initConfig(configFile string) error {
+
 	path, _ := os.Executable()
 	RootPath := filepath.Dir(path)
 

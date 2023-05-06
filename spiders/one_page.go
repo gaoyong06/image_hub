@@ -73,15 +73,6 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 		return nil, fmt.Errorf("failed to parse sections from HTML: %v", err)
 	}
 
-	// Filter out sections with empty image_urls
-	filteredSections := make([]model.Section, 0, len(sections))
-	for _, section := range sections {
-		if len(section.ImageUrls) > 0 {
-			filteredSections = append(filteredSections, section)
-		}
-	}
-	sections = filteredSections
-
 	// 调用每个微信号及其内容索引的自定义方法
 	fileIdx := getFileName(url)
 	funcKey := fmt.Sprintf("%s%s", wechatId, fileIdx)
@@ -92,7 +83,7 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal sections to json: %v", err)
 	}
-	fmt.Printf("=================== Sections JSON: %s\n", sectionsJson)
+	fmt.Printf("\n\n=================== Sections JSON======================\n\n%s\n", sectionsJson)
 
 	// // Update the article object with the extracted sections
 	// article, ok := articleBase.(*model.TblArticle)
