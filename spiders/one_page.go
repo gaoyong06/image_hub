@@ -38,8 +38,7 @@ func NewOnePage(name string) Spider {
 // e *colly.HTMLElement 或者  *colly.Response
 func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (interface{}, error) {
 
-	// articleBase, err := s.baseSpider.ParseData(q, i, baseUrl)
-	_, err := s.baseSpider.ParseData(q, i, baseUrl)
+	articleBase, err := s.baseSpider.ParseData(q, i, baseUrl)
 	if err != nil {
 		return nil, fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
 	}
@@ -68,7 +67,7 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 	htmlStr := string(htmlBytes)
 
 	// Parse the HTML string to extract the sections
-	sections := parseSectionsFromHTML(htmlStr)
+	sections := ParseSectionsFromHTML(htmlStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse sections from HTML: %v", err)
 	}
@@ -85,21 +84,20 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 	}
 	fmt.Printf("\n\n=================== Sections JSON======================\n\n%s\n", sectionsJson)
 
-	// // Update the article object with the extracted sections
-	// article, ok := articleBase.(*model.TblArticle)
-	// if !ok {
-	// 	fmt.Printf("%s failed to convert article to tblArticle", s.GetName())
-	// 	return nil, fmt.Errorf("%s failed to convert article to tblArticle", s.GetName())
-	// }
+	// Update the article object with the extracted sections
+	article, ok := articleBase.(*model.TblArticle)
+	if !ok {
+		fmt.Printf("%s failed to convert article to tblArticle", s.GetName())
+		return nil, fmt.Errorf("%s failed to convert article to tblArticle", s.GetName())
+	}
 
-	// article.Sections = sections
-	// return article, nil
+	article.Sections = sections
+	return article, nil
 
-	return nil, nil
 }
 
 // 从HTML字符串中解析出Section数组，包含文字和图片
-func parseSectionsFromHTML(htmlStr string) []model.Section {
+func ParseSectionsFromHTML(htmlStr string) []model.Section {
 
 	doc, err := html.Parse(strings.NewReader(htmlStr))
 	if err != nil {
