@@ -4,7 +4,7 @@
  * @LastEditors: gaoyong gaoyong06@qq.com
  * @LastEditTime: 2023-04-28 17:33:09
  * @FilePath: \image_hub\spiders\touxiangshe.go
- * @Description: 微信号自定义处理函数
+ * @Description: 微信号自定义处理函数-头像社
  */
 
 package spiders
@@ -52,7 +52,7 @@ func touxiangshe2(sections []model.Section) []model.Section {
 
 	// 如果sections数组中第2项imageUrls为空数组，但Text不为空，则将该文本设置时sections中第3项的文本
 	// 是大图下面的文案
-	if len(sections) > 1 && len(sections[1].ImageUrls) == 0 && len(sections[1].Text) > 0 {
+	if len(sections) > 3 && len(sections[1].ImageUrls) == 0 && len(sections[1].Text) > 0 {
 		sections[2].Text = sections[1].Text
 	}
 
