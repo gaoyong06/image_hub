@@ -10,6 +10,7 @@
 package spiders
 
 import (
+	"encoding/json"
 	"fmt"
 	"image_hub/model"
 
@@ -69,6 +70,16 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 	htmlBytes := e.Response.Body
 	htmlStr := string(htmlBytes)
 
+	// Call the filterImages function and update the htmlString with the new image tags
+	filterImages, err := FilterImagesFromHTML(htmlStr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to filter images: %v", err)
+	}
+
+	// for _, badImg := range badImgs {
+	// 	htmlStr = strings.Replace(htmlStr, fmt.Sprintf(`src="%s"`, badImg), fmt.Sprintf(`src="%s" class="bad-image"`, badImg), -1)
+	// }
+
 	// Parse the HTML string to extract the sections
 	sections := ParseSectionsFromHTML(htmlStr)
 	if err != nil {
@@ -81,11 +92,15 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 	sections = runFunc(funcKey, sections)
 
 	// 将sections以json格式打印出来
-	// sectionsJson, err := json.Marshal(sections)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to marshal sections to json: %v", err)
-	// }
-	// fmt.Printf("\n\n=================== Sections JSON======================\n\n%s\n", sectionsJson)
+	sectionsJson, err := json.Marshal(sections)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal sections to json: %v", err)
+	}
+	fmt.Printf("\n\n=================== Sections JSON======================\n\n%s\n", sectionsJson)
+
+	fmt.Printf("\n\n=================== filterImages======================\n\n%s\n", filterImages)
+
+	panic("======================================== STOP ================================================")
 
 	// Update the article object with the extracted sections
 	article, ok := articleBase.(*model.TblArticle)

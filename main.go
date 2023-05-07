@@ -124,6 +124,7 @@ func Run() {
 
 	c.OnResponse(func(r *colly.Response) {
 
+		fmt.Printf("=============== c.OnResponse. url: %v\n", r.Request.URL.String())
 		urlType := r.Ctx.Get(spiders.UrlTypeKey)
 		isEmpty := q.IsEmpty()
 		size, err := q.Size()
@@ -137,7 +138,7 @@ func Run() {
 	c.OnHTML("html", func(e *colly.HTMLElement) {
 
 		urlType := e.Response.Ctx.Get(spiders.UrlTypeKey)
-		log.Infof("OnHTML: [%d]%s, %s\n", e.Request.ID, urlType, e.Request.URL)
+		fmt.Printf("=============== c.OnHTML: [%d]%s, %s\n", e.Request.ID, urlType, e.Request.URL)
 
 		onePageSpider := spiders.NewOnePage(spiders.OnePage)
 		err := onePageSpider.Process(onePageSpider, q, e, "")
@@ -158,7 +159,7 @@ func Run() {
 	c.OnError(func(r *colly.Response, err error) {
 
 		urlType := r.Ctx.Get(spiders.UrlTypeKey)
-		fmt.Printf("OnError: [%d]%s, %s, %v\n", r.Request.ID, urlType, r.Request.URL, err)
+		fmt.Printf("===============  OnError: [%d]%s, %s, %v\n", r.Request.ID, urlType, r.Request.URL, err)
 		log.Infof("OnError: [%d]%s, %s, %v\n", r.Request.ID, urlType, r.Request.URL, err)
 	})
 
@@ -246,6 +247,7 @@ func Run() {
 		path = strings.ReplaceAll(path, "\\", "/")
 
 		// Process the file with the selected spider
+		fmt.Printf("==============  spider.AddReqToQueue. title: %+v, spider: %+v,  path: %+v\n", title, spider.GetName(), path)
 		err = spider.AddReqToQueue(q, nil, path)
 		if err != nil {
 			return err
