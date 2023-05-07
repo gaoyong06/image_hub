@@ -71,10 +71,10 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 	htmlStr := string(htmlBytes)
 
 	// Call the filterImages function and update the htmlString with the new image tags
-	filterImages, err := FilterImagesFromHTML(htmlStr)
-	if err != nil {
-		return nil, fmt.Errorf("failed to filter images: %v", err)
-	}
+	// filterImages, err := FilterImagesFromHTML(htmlStr)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to filter images: %v", err)
+	// }
 
 	// for _, badImg := range badImgs {
 	// 	htmlStr = strings.Replace(htmlStr, fmt.Sprintf(`src="%s"`, badImg), fmt.Sprintf(`src="%s" class="bad-image"`, badImg), -1)
@@ -98,7 +98,7 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 	}
 	fmt.Printf("\n\n=================== Sections JSON======================\n\n%s\n", sectionsJson)
 
-	fmt.Printf("\n\n=================== filterImages======================\n\n%s\n", filterImages)
+	// fmt.Printf("\n\n=================== filterImages======================\n\n%s\n", filterImages)
 
 	panic("======================================== STOP ================================================")
 

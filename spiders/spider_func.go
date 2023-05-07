@@ -14,11 +14,58 @@ import (
 	"image"
 	"image_hub/model"
 	"log"
+	"math"
 	"os"
 	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
+
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+)
+
+var (
+
+	// 图片类型与理想的尺寸
+	imageTypes = map[string]map[string]int{
+		"avatar":     {"width": 400, "height": 400},
+		"background": {"width": 1080, "height": 1080},
+		"wallpaper":  {"width": 1080, "height": 1920},
+		"sticker":    {"width": 300, "height": 300}}
+
+	// 图片尺寸范围
+	imageDimensionRange = map[string]map[string]float64{
+		"avatar":     {"minWidth": 360, "minHeight": 360, "maxWidth": 1080, "maxHeight": 1200},
+		"background": {"minWidth": 500, "minHeight": 500, "maxWidth": 1395, "maxHeight": 1920},
+		"wallpaper":  {"minWidth": 864, "minHeight": 1728, "maxWidth": 1188, "maxHeight": 2376},
+		"sticker":    {"minWidth": 180, "minHeight": 180, "maxWidth": 1080, "maxHeight": 1080},
+	}
+
+	// 图片文件大小范围
+	imageSizeRange = map[string]map[string]float64{
+		"avatar":     {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 2}, // 20kb~2MB
+		"background": {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 2}, // 20kb~2MB
+		"wallpaper":  {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 4}, // 20kb~4MB
+		"sticker":    {"minSize": 1024 * 6, "maxSize": 1024 * 1024 * 2},  // 10kb~2MB
+	}
+
+	// 文件类型范围
+	imageFormatRange = map[string][]string{
+		"avatar":     {"jpg", "jpeg", "png", "webp"},
+		"background": {"jpg", "jpeg", "png", "webp"},
+		"wallpaper":  {"jpg", "jpeg", "png", "webp"},
+		"sticker":    {"jpg", "jpeg", "png", "webp", "gif"},
+	}
+
+	// 图片宽高比范围
+	imageRatioRange = map[string]map[string]float64{
+		"avatar":     {"min": 0.92, "max": 1.30},
+		"background": {"min": 0.80, "max": 1.20},
+		"wallpaper":  {"min": 0.97, "max": 2.17},
+		"sticker":    {"min": 0.15, "max": 1.14},
+	}
 )
 
 // 从HTML字符串中解析出Section数组，包含文字和图片
@@ -121,40 +168,23 @@ func ParseSectionsFromHTML(htmlStr string) []model.Section {
 	return sections
 }
 
-// 根据宽度、高度、比例、物理空间大小过滤图片，不符合头像、背景图、壁纸、表情包尺寸的图片会被过滤出来
+// 获取网页内图片的信息，返回一个由图片信息map构成的数组
+// map的key如下：
 //
+//	ratio：图片的宽高比
+//	width：图片的宽高比
+//	height：图片的宽高比
+//	format: 图片的格式
+//	type：图片的类型(avatar: 头像,background: 背景图,wallpaper: 壁纸,sticker: 表情包, unknown: 未知的类型)
+//	shape：图片的形状(vertical: 垂直的,horizontal: 水平的,square: 正方形)
+//
+// 工作原理：
+//
+//	根据宽度、高度、比例、物理空间大小检查图片，不符合头像、背景图、壁纸、表情包尺寸的图片会被过滤出来
 //	例如头像的图片，更偏向一个正方形，但是不一定绝对是正方形，只是接近于正方形；而背景图，偏向一个横向的长方形，但是宽和高差异也不是特别大；
 //	而手机壁纸是竖向的长方形，宽度小，高度高，高度比宽度要高很多；而表情包，尺寸上，一般比头像小，宽高比和头像相差不大，文件物理尺寸上一般比头像小一些
 //	返回结果是每个图片一个map
-func FilterImagesFromHTML(htmlStr string) ([]map[string]interface{}, error) {
-
-	// 指定头像、朋友圈背景图片、手机壁纸、微信表情包的尺寸
-	// 微信头像：建议尺寸为300×300像素，文件大小在1MB以内更佳。
-	// 微信朋友圈背景图：建议尺寸为1080×1920像素，文件大小在2MB以内更佳。
-	// QQ和微信上使用的表情包：建议尺寸为240×240像素，文件大小在200KB以内更佳。
-	// 手机桌面的壁纸：因不同手机屏幕大小而异，一般建议选择高清壁纸，尺寸建议为1080×1920像素或以上，文件大小在2MB以内更佳。
-	// 微信聊天的背景图：建议尺寸为750×1334像素，文件大小在2MB以内更佳。
-	imageTypes := map[string]map[string]int{
-		"avatar":     {"width": 400, "height": 400},
-		"background": {"width": 1080, "height": 1080},
-		"wallpaper":  {"width": 1080, "height": 1920},
-		"sticker":    {"width": 200, "height": 200}}
-
-	// 图片尺寸范围
-	imageDimensionRange := map[string]map[string]float64{
-		"avatar":     {"minWidth": 360, "minHeight": 360, "maxWidth": 440, "maxHeight": 440},
-		"background": {"minWidth": 945, "minHeight": 945, "maxWidth": 1395, "maxHeight": 1395},
-		"wallpaper":  {"minWidth": 864, "minHeight": 1728, "maxWidth": 1188, "maxHeight": 2376},
-		"sticker":    {"minWidth": 180, "minHeight": 180, "maxWidth": 220, "maxHeight": 220},
-	}
-
-	// 图片文件大小范围
-	imageSizeRange := map[string]map[string]float64{
-		"avatar":     {"minSize": 1024 * 2, "maxSize": 1024 * 1024 * 4},
-		"background": {"minSize": 1024 * 10, "maxSize": 1024 * 1024 * 8},
-		"wallpaper":  {"minSize": 1024 * 10, "maxSize": 1024 * 1024 * 8},
-		"sticker":    {"minSize": 1024, "maxSize": 1024 * 1024 * 2},
-	}
+func GetImagesInfoFromHTML(htmlStr string) ([]map[string]interface{}, error) {
 
 	// 用正则表达式在HTML字符串中查找img标签
 	imgRegex, err := regexp.Compile(`<img.*?src=["|'](.*?)["|'].*?>`)
@@ -164,18 +194,22 @@ func FilterImagesFromHTML(htmlStr string) ([]map[string]interface{}, error) {
 	imgTags := imgRegex.FindAllString(htmlStr, -1)
 
 	// 遍历每个img标签，通过宽度、高度、比例、物理空间大小过滤图片
-	var filteredImgs []map[string]interface{}
+	var imgs []map[string]interface{}
 	for _, imgTag := range imgTags {
 
 		imgInfo := make(map[string]interface{})
 
 		// 获取图片的源URL
-		srcRegex := regexp.MustCompile(`src=["|'](.*?)["|']`)
-		srcStr := srcRegex.FindStringSubmatch(imgTag)
-		if len(srcStr) < 2 {
+		regex := regexp.MustCompile(`\s+src=["']([^"']*)["']`)
+		matches := regex.FindAllStringSubmatch(imgTag, -1)
+
+		if len(matches) < 1 {
+			fmt.Println("====== len(srcStr) < 2")
 			continue
 		}
-		imgInfo["src"] = srcStr[1]
+
+		// 输出匹配到的src属性值
+		imgInfo["src"] = matches[0][1]
 
 		// 打开图片文件，读取宽度和高度和大小
 		imgFile, err := os.Open(imgInfo["src"].(string))
@@ -183,8 +217,9 @@ func FilterImagesFromHTML(htmlStr string) ([]map[string]interface{}, error) {
 			continue
 		}
 		defer imgFile.Close()
-		img, format, err := image.Decode(imgFile)
+		img, imgFormat, err := image.Decode(imgFile)
 		if err != nil {
+
 			continue
 		}
 		imgWidth := float64(img.Bounds().Max.X)  // 获取图片宽度
@@ -192,34 +227,93 @@ func FilterImagesFromHTML(htmlStr string) ([]map[string]interface{}, error) {
 		imgSizeInfo, _ := imgFile.Stat()
 		imgSize := float64(imgSizeInfo.Size())
 
-		// 过滤不符合规定尺寸和大小的图片
-		//分类图片
-		var imgType string
-		var isValid bool
+		if imgHeight > imgWidth {
+			imgInfo["shape"] = "vertical"
+		} else if imgHeight < imgWidth {
+			imgInfo["shape"] = "horizontal"
+		} else {
+			imgInfo["shape"] = "square"
+		}
 
-		for t, values := range imageTypes {
-			//分类图片
-			if imgWidth/imgHeight >= float64(values["width"])/float64(values["height"])*0.8 && imgWidth/imgHeight <= float64(values["width"])/float64(values["height"])*1.2 {
-				//尺寸是否符合
-				sizes := imageDimensionRange[t]
-				if imgWidth >= sizes["minWidth"] && imgWidth <= sizes["maxWidth"] && imgHeight >= sizes["minHeight"] && imgHeight <= sizes["maxHeight"] {
-					isValid = true
-					imgType = t
-					break
-				}
+		var imgRatio float64 = 0
+		if imgWidth > 0 {
+			imgRatio = float64(imgHeight) / float64(imgWidth)
+		}
+
+		imgInfo["ratio"] = imgRatio
+		imgInfo["width"] = imgWidth
+		imgInfo["height"] = imgHeight
+		imgInfo["format"] = imgFormat
+		imgInfo["size"] = imgSize
+
+		// 判断每种类型的得分
+		scores := make(map[string]float64)
+		for typeName, dimRange := range imageDimensionRange {
+			if dimRange["minWidth"] <= float64(imgWidth) && float64(imgWidth) <= dimRange["maxWidth"] &&
+				dimRange["minHeight"] <= float64(imgHeight) && float64(imgHeight) <= dimRange["maxHeight"] &&
+				float64(imgSize) >= imageSizeRange[typeName]["minSize"] && float64(imgSize) <= imageSizeRange[typeName]["maxSize"] &&
+				func(imageFormat string, formats []string) bool {
+					for _, format := range formats {
+						if imageFormat == format {
+							return true
+						}
+					}
+					return false
+				}(imgFormat, imageFormatRange[typeName]) &&
+				imageRatioRange[typeName]["min"] <= imgRatio && imgRatio <= imageRatioRange[typeName]["max"] {
+				scores[typeName] = (float64(imageTypes[typeName]["width"])-math.Abs(float64(imageTypes[typeName]["width"])-float64(imgWidth)))/float64(imageTypes[typeName]["width"]) +
+					(float64(imageTypes[typeName]["height"])-math.Abs(float64(imageTypes[typeName]["height"])-float64(imgHeight)))/float64(imageTypes[typeName]["height"]) +
+					1/(1+math.Abs(imgRatio-float64(imageRatioRange[typeName]["min"]))) +
+					1/(1+math.Abs(imgRatio-float64(imageRatioRange[typeName]["max"])))
 			}
 		}
 
-		if isValid && imgSize > imageSizeRange[imgType]["minSize"] && imgSize < imageSizeRange[imgType]["maxSize"] {
-			imgInfo["type"] = imgType
-			imgInfo["width"] = imgWidth
-			imgInfo["height"] = imgHeight
-			imgInfo["format"] = format
-			filteredImgs = append(filteredImgs, imgInfo)
+		var maxScore float64
+		var maxType string
+		for typeName, score := range scores {
+			if score > maxScore {
+				maxScore = score
+				maxType = typeName
+			}
+		}
+
+		if maxType == "" {
+			maxType = "unknown"
+		}
+
+		imgInfo["type"] = maxType
+		imgs = append(imgs, imgInfo)
+	}
+
+	return imgs, nil
+}
+
+// 根据HTML文本提取所有图片的信息，并返回符合要求的图片信息及被过滤的图片信息
+func GetFilteredImagesInfoFromHTML(htmlStr string, expectedType string) ([]map[string]interface{}, []map[string]interface{}, error) {
+
+	// 调用GetImagesInfoFromHTML提取所有图片信息
+	imgs, err := GetImagesInfoFromHTML(htmlStr)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get images info from HTML: %v", err)
+	}
+
+	// 处理不符合要求的图片，将其从imgs中删除，并添加到filteredImgs
+	var filteredImgs []map[string]interface{}
+	for i := len(imgs) - 1; i >= 0; i-- {
+		img := imgs[i]
+
+		// img["type"]只是参考, 还依赖于文件大小与宽高比
+		if img["type"] != expectedType && (img["size"].(float64) < imageSizeRange[expectedType]["minSize"] ||
+			img["size"].(float64) > imageSizeRange[expectedType]["maxSize"] ||
+			img["ratio"].(float64) < imageRatioRange[expectedType]["min"] ||
+			img["ratio"].(float64) > imageRatioRange[expectedType]["max"]) {
+
+			filteredImgs = append(filteredImgs, img)
+			imgs = append(imgs[:i], imgs[i+1:]...)
 		}
 	}
 
-	return filteredImgs, nil
+	return imgs, filteredImgs, nil
 }
 
 //------------------------------------ 私有方法 -------------------------------------------------
