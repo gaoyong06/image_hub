@@ -34,7 +34,8 @@ var (
 
 	// Define the directory to traverse
 	// dir = "D:/work/wechat_download_data/html/test4"
-	dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
+	// dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
+	dir = "D:/work/wechat_download_data/html/Dump-0422-20-12-37"
 )
 
 func main() {
@@ -142,6 +143,7 @@ func Run() {
 		err := onePageSpider.Process(onePageSpider, q, e, "")
 		if err != nil {
 			log.Errorf("onePageSpider.Process failed. err: %s\n", err)
+			fmt.Printf("onePageSpider.Process failed. err: %s\n", err)
 		}
 
 	})
@@ -206,38 +208,49 @@ func Run() {
 			return err
 		}
 
+		// 标题
 		selector := "meta[property='og:title']"
-		title, isExist := doc.Find(selector).Attr("content")
+		title, _ := doc.Find(selector).Attr("content")
 
-		if isExist {
+		// 标签
+		var tags []string
+		selector = ".article-tag__item"
+		doc.Find(".article-tag__item").Each(func(i int, s *goquery.Selection) {
+			tag := s.Text()
+			fmt.Printf("tag: %+v\n", tag)
+			// Add tag to an array
+			// 使用一个切片保存 html 中所有 .article-tag__item 的值
+			tags = append(tags, tag)
+		})
 
-			if strings.Contains(title, "头像") ||
-				strings.Contains(title, "背景") ||
-				strings.Contains(title, "背景图") ||
-				strings.Contains(title, "套图") ||
-				strings.Contains(title, "壁纸") ||
-				strings.Contains(title, "表情") ||
-				strings.Contains(title, "表情包") {
-				spider = onePageSpider
-			} else {
-				spider = unknownPageSpider
-				log.Warnf("no matching spider found for file %s", d.Name())
-			}
+		titleTagStr := title + "," + strings.Join(tags, ",")
 
-			fmt.Printf("==== title: %+v, spider: %+v\n", title, spider.GetName())
-			// 替换 \ 为 /
-			// D:\work\wechat_download_data\html\test\20220526_111900_1.html
-			// D:/work/wechat_download_data/html/test/20220526_111900_1.html
-			path = strings.ReplaceAll(path, "\\", "/")
-
-			// Process the file with the selected spider
-			err = spider.AddReqToQueue(q, nil, path)
-			if err != nil {
-				return err
-			}
+		if strings.Contains(titleTagStr, "头像") ||
+			strings.Contains(titleTagStr, "背景") ||
+			strings.Contains(titleTagStr, "背景图") ||
+			strings.Contains(titleTagStr, "套图") ||
+			strings.Contains(titleTagStr, "壁纸") ||
+			strings.Contains(titleTagStr, "表情") ||
+			strings.Contains(titleTagStr, "表情包") {
+			spider = onePageSpider
 		} else {
-			return fmt.Errorf("no matching content found for file %s", d.Name())
+			spider = unknownPageSpider
+			log.Warnf("no matching spider found for file %s", d.Name())
+			fmt.Printf("==== no matching spider found for file %s", d.Name())
 		}
+
+		fmt.Printf("==== title: %+v, spider: %+v\n", title, spider.GetName())
+		// 替换 \ 为 /
+		// D:\work\wechat_download_data\html\test\20220526_111900_1.html
+		// D:/work/wechat_download_data/html/test/20220526_111900_1.html
+		path = strings.ReplaceAll(path, "\\", "/")
+
+		// Process the file with the selected spider
+		err = spider.AddReqToQueue(q, nil, path)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 

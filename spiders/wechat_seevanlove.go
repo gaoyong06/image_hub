@@ -40,13 +40,22 @@ func seevanlove1(sections []model.Section) []model.Section {
 	// Filter out sections with empty image_urls
 	sections = filterEmptyImageUrls(sections)
 
-	// 删掉sections前3项(是网页图标,封面宣传图)
-	if len(sections) > 3 {
-		sections = sections[3:]
+	// // 检查sections前3项如果ImageUrls数量是2,则删掉该section(是网页图标,封面宣传图)
+	for i := 0; i < 3 && i < len(sections); i++ { // iterate at most over the first 3 items or the whole slice if it has less than 3 elements
+		if len(sections[i].ImageUrls) == 2 { // if image urls count is 2, remove the section
+			sections = append(sections[:i], sections[i+1:]...) // remove the i-th element
+			i--                                                // compensate for the removed element by decrementing the index
+		}
 	}
 
-	// 删掉sections最后2项(是网页图标,封面宣传图)
-	sections = sections[:len(sections)-2]
+	// 检查sections后2项如果ImageUrls数量是1或者3,则删掉该section(是网页图标,封面宣传图)
+	for i := len(sections) - 2; i < len(sections); i++ {
+
+		if len(sections[i].ImageUrls) == 1 || len(sections[i].ImageUrls) == 3 {
+			sections = append(sections[:i], sections[i+1:]...)
+			i--
+		}
+	}
 
 	return sections
 }
