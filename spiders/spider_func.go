@@ -50,10 +50,10 @@ var (
 
 	// 图片文件大小范围
 	imageSizeRange = map[string]map[string]float64{
-		"avatar":     {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 2}, // 20kb~2MB
-		"background": {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 2}, // 20kb~2MB
-		"wallpaper":  {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 4}, // 20kb~4MB
-		"sticker":    {"minSize": 1024 * 6, "maxSize": 1024 * 1024 * 4},  // 10kb~2MB
+		"avatar":     {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 10}, // 20kb~10MB
+		"background": {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 10}, // 20kb~10MB
+		"wallpaper":  {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 20}, // 20kb~20MB
+		"sticker":    {"minSize": 1024 * 6, "maxSize": 1024 * 1024 * 4},   // 10kb~4MB
 	}
 
 	// 文件类型范围
@@ -370,8 +370,8 @@ func IsValidImage(imgStr string, imagesInfo []map[string]interface{}, imageTypes
 //
 //	src: 图片的地址
 //	ratio：图片的宽高比
-//	width：图片的宽高比
-//	height：图片的宽高比
+//	width：图片的宽度
+//	height：图片的高度
 //	format: 图片的格式
 //	shape：图片的形状(vertical: 垂直的,horizontal: 水平的,square: 正方形)
 //	type：图片的类型(avatar: 头像,background: 背景图,wallpaper: 壁纸,sticker: 表情包, unknown: 未知的类型)
@@ -381,67 +381,58 @@ func IsValidImage(imgStr string, imagesInfo []map[string]interface{}, imageTypes
 //	根据宽度、高度、比例、物理空间大小检查图片
 //	例如头像的图片，更偏向一个正方形，但是不一定绝对是正方形，只是接近于正方形；而背景图，偏向一个横向的长方形，但是宽和高差异也不是特别大；
 //	而手机壁纸是竖向的长方形，宽度小，高度高，高度比宽度要高很多；而表情包，尺寸上，一般比头像小，宽高比和头像相差不大，文件物理尺寸上一般比头像小一些
-func InferImageTypeByScoreFromHTML(htmlStr string) ([]map[string]interface{}, error) {
+func InferImageTypeByScoreFromHTML(htmlStr string) ([]map[string]interface{}, []map[string]interface{}, error) {
 
-	// 调用GetImagesInfoFromHTML提取所有图片信息
 	imgs, err := GetImagesInfoFromHTML(htmlStr)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get images info from HTML: %v", err)
+		return nil, nil, fmt.Errorf("failed to get images info from HTML: %v", err)
 	}
 
 	fmt.Printf("============================== GetImagesInfoFromHTML len: %d ==========\n", len(imgs))
 
-	for i := 0; i < len(imgs); i++ {
+	var filteredImgs []map[string]interface{}
 
-		imgInfo := imgs[i]
+	// 判断每种类型的得分并找出得分最高的图片类型
+	for _, imgInfo := range imgs {
 		imgWidth := imgInfo["width"].(float64)
 		imgHeight := imgInfo["height"].(float64)
 		imgSize := imgInfo["size"].(float64)
 		imgRatio := imgInfo["ratio"].(float64)
 		imgFormat := imgInfo["format"].(string)
 
-		// 判断每种类型的得分
-		scores := make(map[string]float64)
+		maxScore, maxType := 0.0, "unknown"
+
 		for typeName, dimRange := range imageDimensionRange {
-			if dimRange["minWidth"] <= imgWidth && imgWidth <= dimRange["maxWidth"] &&
-				dimRange["minHeight"] <= imgHeight && imgHeight <= dimRange["maxHeight"] &&
-				imgSize >= imageSizeRange[typeName]["minSize"] && imgSize <= imageSizeRange[typeName]["maxSize"] &&
-
+			if (dimRange["minWidth"] <= imgWidth) && (imgWidth <= dimRange["maxWidth"]) && (dimRange["minHeight"] <= imgHeight) && (imgHeight <= dimRange["maxHeight"]) &&
+				(imgSize >= imageSizeRange[typeName]["minSize"]) && (imgSize <= imageSizeRange[typeName]["maxSize"]) &&
 				utils.Contains(imageFormatRange[typeName], imgFormat) &&
+				(imageRatioRange[typeName]["min"] <= imgRatio) && (imgRatio <= imageRatioRange[typeName]["max"]) {
 
-				imageRatioRange[typeName]["min"] <= imgRatio && imgRatio <= imageRatioRange[typeName]["max"] {
+				// 计算图片得分
+				widthScore := (imageTypes[typeName]["width"] - math.Abs(imageTypes[typeName]["width"]-imgWidth)) / imageTypes[typeName]["width"]
+				heightScore := (imageTypes[typeName]["height"] - math.Abs(imageTypes[typeName]["height"]-imgHeight)) / imageTypes[typeName]["height"]
+				ratioScore := 1.0 - math.Abs(imgRatio-imageRatioRange[typeName]["max"])/imageRatioRange[typeName]["max"]
+				ratioDeviation := 1.0 / (1.0 + math.Abs(imgRatio-imageRatioRange[typeName]["min"]))
+				score := widthScore + heightScore + ratioScore + ratioDeviation
 
-				// 如果宽高比很小例如imageRatio为0.26且该图文件类型是gif, 那么该图只能往表情包的类型(type)上计算， 因为其他的类型，都不符合会符合这个要求
-				if imgRatio < 0.5 && imgFormat == "gif" && typeName != "sticker" {
-					continue
+				// 若得分高于之前图片则设为最高得分
+				if score > maxScore {
+					maxScore, maxType = score, typeName
 				}
-
-				scores[typeName] = (imageTypes[typeName]["width"]-math.Abs(imageTypes[typeName]["width"]-imgWidth))/imageTypes[typeName]["width"] +
-					(imageTypes[typeName]["height"]-math.Abs(imageTypes[typeName]["height"]-imgHeight))/imageTypes[typeName]["height"] +
-					(1.0-math.Abs(imgRatio-imageRatioRange[typeName]["max"]))/imageRatioRange[typeName]["max"] +
-					1.0/(1.0+math.Abs(imgRatio-imageRatioRange[typeName]["min"]))
 			}
 		}
 
-		var maxScore float64
-		var maxType string
-		for typeName, score := range scores {
-			if score > maxScore {
-				maxScore = score
-				maxType = typeName
-			}
-		}
-
-		if maxType == "" {
-			maxType = "unknown"
-		}
-
+		// 生成图片信息map
 		imgInfo["type"] = maxType
-		imgs[i] = imgInfo
+
+		// 归类并筛选出符合条件的图片信息
+		if (maxType == "unknown") || ((imgInfo["size"].(float64) < imageSizeRange[maxType]["minSize"]) || (imgInfo["size"].(float64) > imageSizeRange[maxType]["maxSize"]) ||
+			(imgInfo["ratio"].(float64) < imageRatioRange[maxType]["min"]) || (imgInfo["ratio"].(float64) > imageRatioRange[maxType]["max"])) {
+			filteredImgs = append(filteredImgs, imgInfo)
+		}
 	}
 
-	fmt.Printf("============================== InferImageTypeByScoreFromHTML len: %d ==========\n", len(imgs))
-	return imgs, nil
+	return imgs, filteredImgs, nil
 }
 
 // 根据HTML文本提取所有图片的信息，并返回符合要求的图片信息及被过滤的图片信息

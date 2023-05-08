@@ -48,12 +48,12 @@ func TestInferImageTypeByScoreFromHTML(t *testing.T) {
 			htmlStr := string(htmlBytes)
 
 			// Get image info from HTML using the GetImageInfoFromHTML function
-			imgsInfo, err := spiders.InferImageTypeByScoreFromHTML(htmlStr)
+			imgsInfo, filteredImgs, err := spiders.InferImageTypeByScoreFromHTML(htmlStr)
 			if err != nil {
 				panic(err)
 			}
 
-			fmt.Printf("=================fileName: %s,  len(imgsInfo): %#v\n", file.Name(), len(imgsInfo))
+			fmt.Printf("=================fileName: %s,  len(imgsInfo): %d, filteredImgs: %#v \n", file.Name(), len(imgsInfo), filteredImgs)
 
 			// Loop through each image to add the custom class and border
 			for _, img := range imgsInfo {
