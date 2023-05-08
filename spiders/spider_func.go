@@ -10,6 +10,7 @@
 package spiders
 
 import (
+	"encoding/json"
 	"fmt"
 	"image"
 	"image_hub/model"
@@ -109,10 +110,9 @@ func GetHtmlImageTypes(htmlStr string) []string {
 // dataSrcRepeat htmlStr所在的文件目录内的所有html中，重复的图片构成的数组
 func ParseSectionsFromHTML(htmlStr string, dataSrcRepeat []string) ([]model.Section, error) {
 
-	// html字符串中图片预期的类型(头像, 背景...)，可选值有avatart, background, wallpaper,sticker
-	imageTypes := GetHtmlImageTypes(htmlStr)
-	fmt.Printf("================== imageTypes: %#v\n", imageTypes)
-
+	// // html字符串中图片预期的类型(头像, 背景...)，可选值有avatart, background, wallpaper,sticker
+	// imageTypes := GetHtmlImageTypes(htmlStr)
+	// fmt.Printf("================== imageTypes: %#v\n", imageTypes)
 	doc, err := html.Parse(strings.NewReader(htmlStr))
 	if err != nil {
 		return nil, err
@@ -120,9 +120,22 @@ func ParseSectionsFromHTML(htmlStr string, dataSrcRepeat []string) ([]model.Sect
 
 	var sections []model.Section
 
-	images, err := GetImagesInfoFromHTML(htmlStr)
+	// images, err := GetImagesInfoFromHTML(htmlStr)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// 得到不不符头像，背景图，壁纸，表情包规范的图片
+	var filteredImgSrcs []string
+	_, filteredImgs, err := InferImageTypeByScoreFromHTML(htmlStr)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(filteredImgs) > 0 {
+		for _, filteredImg := range filteredImgs {
+			filteredImgSrcs = append(filteredImgSrcs, filteredImg["src"].(string))
+		}
 	}
 
 	// 字符串过滤器，过滤掉不需要的标签，包括空的 span、不可见文本元素等, #activity-name，#meta_content，#js_tags 三个标签的过滤
@@ -178,11 +191,21 @@ func ParseSectionsFromHTML(htmlStr string, dataSrcRepeat []string) ([]model.Sect
 				return true
 			}
 
-			// 判断图片的长，宽，大小，宽高比，文件类型(jpg,png,gif...)与图片预期的类型(头像，背景图，壁纸，表情包)是否一致，不一致的过滤掉
-			if len(imageTypes) > 0 && !IsValidImage(src, images, imageTypes) {
-				fmt.Printf("========================= !IsValidImage. src: %s\n", src)
+			if utils.Contains(filteredImgSrcs, src) {
+
+				fmt.Printf("========================= filteredImgSrcs. src: %s\n", src)
+
+				filteredImgsJSON, _ := json.Marshal(filteredImgs)
+				fmt.Printf("\n\n=============== filteredImgsJSON =================\n\n : %s\n\n", filteredImgsJSON)
+
 				return true
 			}
+
+			// 判断图片的长，宽，大小，宽高比，文件类型(jpg,png,gif...)与图片预期的类型(头像，背景图，壁纸，表情包)是否一致，不一致的过滤掉
+			// if len(imageTypes) > 0 && !IsValidImage(src, images, imageTypes) {
+			// 	fmt.Printf("========================= !IsValidImage. src: %s\n", src)
+			// 	return true
+			// }
 		}
 		return false
 	}
