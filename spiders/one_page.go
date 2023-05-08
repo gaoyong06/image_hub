@@ -33,11 +33,18 @@ func NewOnePage(name string) Spider {
 
 // 解析将爬取到的数据至一个规范的结构体中
 // e *colly.HTMLElement 或者  *colly.Response
-func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (interface{}, error) {
+func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string, params interface{}) (interface{}, error) {
 
-	articleBase, err := s.baseSpider.ParseData(q, i, baseUrl)
+	dataSrcRepeat := params
+	articleBase, err := s.baseSpider.ParseData(q, i, baseUrl, params)
 	if err != nil {
 		return nil, fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
+	}
+
+	article, ok := articleBase.(*model.TblArticle)
+	if !ok {
+		fmt.Printf("%s failed to convert article to tblArticle", s.GetName())
+		return nil, fmt.Errorf("%s failed to convert article to tblArticle", s.GetName())
 	}
 
 	// Type assertion to convert i to *colly.HTMLElement
@@ -70,18 +77,11 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 	htmlBytes := e.Response.Body
 	htmlStr := string(htmlBytes)
 
-	// Call the filterImages function and update the htmlString with the new image tags
-	// filterImages, err := FilterImagesFromHTML(htmlStr)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to filter images: %v", err)
-	// }
-
-	// for _, badImg := range badImgs {
-	// 	htmlStr = strings.Replace(htmlStr, fmt.Sprintf(`src="%s"`, badImg), fmt.Sprintf(`src="%s" class="bad-image"`, badImg), -1)
-	// }
-
+	// imageTypes := GetImageTypes(article.Title, article.Tags)
+	imageTypes := []string{"avatar", "wallpaper"}
+	fmt.Printf("================== imageTypes: %#v\n", imageTypes)
 	// Parse the HTML string to extract the sections
-	sections := ParseSectionsFromHTML(htmlStr)
+	sections, err := ParseSectionsFromHTML(htmlStr, imageTypes, dataSrcRepeat.([]string))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse sections from HTML: %v", err)
 	}
@@ -97,17 +97,6 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string) (inte
 		return nil, fmt.Errorf("failed to marshal sections to json: %v", err)
 	}
 	fmt.Printf("\n\n=================== Sections JSON======================\n\n%s\n", sectionsJson)
-
-	// fmt.Printf("\n\n=================== filterImages======================\n\n%s\n", filterImages)
-
-	panic("======================================== STOP ================================================")
-
-	// Update the article object with the extracted sections
-	article, ok := articleBase.(*model.TblArticle)
-	if !ok {
-		fmt.Printf("%s failed to convert article to tblArticle", s.GetName())
-		return nil, fmt.Errorf("%s failed to convert article to tblArticle", s.GetName())
-	}
 
 	article.Sections = sections
 	return article, nil

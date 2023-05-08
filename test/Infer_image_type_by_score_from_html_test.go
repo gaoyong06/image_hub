@@ -7,14 +7,21 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 )
 
-// Test spiders.GetImagesInfoFromHTML function
-func TestGetImageInfoFromHTML(t *testing.T) {
+// Test spiders.InferImageTypeByScoreFromHTML function
+// TODO: 还有bug
+func TestInferImageTypeByScoreFromHTML(t *testing.T) {
+
+	fmt.Println("======================= RUN TestInferImageTypeByScoreFromHTML ======================")
 
 	// 后面一定要加反斜杠
 	directoryPath := "D:/work/wechat_download_data/html/test5/"
+
+	// 新建测试文件的前缀
+	updatedFilePrefix := "updated_"
 
 	// Read all HTML files in the directory
 	fileList, err := ioutil.ReadDir(directoryPath)
@@ -25,7 +32,7 @@ func TestGetImageInfoFromHTML(t *testing.T) {
 	// Loop through each file
 	for _, file := range fileList {
 		// Check if the file is an HTML file
-		if filepath.Ext(file.Name()) == ".html" {
+		if filepath.Ext(file.Name()) == ".html" || !strings.HasPrefix(file.Name(), updatedFilePrefix) {
 			// Open the file
 			htmlFile, err := os.Open(directoryPath + file.Name())
 			if err != nil {
@@ -41,10 +48,12 @@ func TestGetImageInfoFromHTML(t *testing.T) {
 			htmlStr := string(htmlBytes)
 
 			// Get image info from HTML using the GetImageInfoFromHTML function
-			imgsInfo, err := spiders.GetImagesInfoFromHTML(htmlStr)
+			imgsInfo, err := spiders.InferImageTypeByScoreFromHTML(htmlStr)
 			if err != nil {
 				panic(err)
 			}
+
+			fmt.Printf("=================fileName: %s,  len(imgsInfo): %#v\n", file.Name(), len(imgsInfo))
 
 			// Loop through each image to add the custom class and border
 			for _, img := range imgsInfo {
@@ -73,22 +82,22 @@ func TestGetImageInfoFromHTML(t *testing.T) {
 					return overlayText
 				})
 
-				// Create the updated file with a path relative to the original file
-				updatedFilePath := filepath.Dir(directoryPath+file.Name()) + "/updated_" + file.Name()
-				updatedFile, err := os.Create(updatedFilePath)
-				if err != nil {
-					panic(err)
-				}
-
-				// Write the updated HTML string to the file
-				_, err = updatedFile.WriteString(htmlStr)
-				if err != nil {
-					panic(err)
-				}
-
-				updatedFile.Close()
-				fmt.Printf("===== success. updatedFile: %s\n", updatedFilePath)
 			}
+
+			// Create the updated file with a path relative to the original file
+			updatedFilePath := filepath.Dir(directoryPath+file.Name()) + "/" + updatedFilePrefix + file.Name()
+			updatedFile, err := os.Create(updatedFilePath)
+			if err != nil {
+				panic(err)
+			}
+			// Write the updated HTML string to the file
+			_, err = updatedFile.WriteString(htmlStr)
+			if err != nil {
+				panic(err)
+			}
+
+			updatedFile.Close()
+			fmt.Printf("===== success. updatedFile: %s\n", updatedFilePath)
 		}
 	}
 }

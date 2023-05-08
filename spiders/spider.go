@@ -29,7 +29,7 @@ type Spider interface {
 	// 解析将爬取到的数据至一个规范的结构体中
 	// e 当前爬虫请求的返回结果 *colly.HTMLElement 或者  *colly.Response
 	// baseUrl 请求的基准url,目的是为页面内的相对地址补全为完整的地址
-	ParseData(q *queue.Queue, i interface{}, baseUrl string) (interface{}, error)
+	ParseData(q *queue.Queue, i interface{}, baseUrl string, params interface{}) (interface{}, error)
 
 	// 业务处理
 	// 1. 向队列追加请求
@@ -37,5 +37,6 @@ type Spider interface {
 	// 3. 保存数据 或 更新数据 或 继续下一层级的请求
 	// e  当前爬虫请求的返回结果 *colly.HTMLElement 或者  *colly.Response
 	// baseUrl 请求的基准url,目的是为页面内的相对地址补全为完整的地址
-	Process(s Spider, q *queue.Queue, i interface{}, baseUrl string) error
+	// params 自定义参数,向下层业务传递参数
+	Process(s Spider, q *queue.Queue, i interface{}, baseUrl string, params interface{}) error
 }

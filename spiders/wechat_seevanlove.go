@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-28 17:33:09
+ * @LastEditTime: 2023-05-08 16:48:35
  * @FilePath: \image_hub\spiders\touxiangshe.go
  * @Description: 微信号自定义处理函数-情侣头像原创榜
  */
@@ -40,22 +40,12 @@ func seevanlove1(sections []model.Section) []model.Section {
 	// Filter out sections with empty image_urls
 	sections = filterEmptyImageUrls(sections)
 
-	// // 检查sections前3项如果ImageUrls数量是2,则删掉该section(是网页图标,封面宣传图)
-	for i := 0; i < 3 && i < len(sections); i++ { // iterate at most over the first 3 items or the whole slice if it has less than 3 elements
-		if len(sections[i].ImageUrls) == 2 { // if image urls count is 2, remove the section
-			sections = append(sections[:i], sections[i+1:]...) // remove the i-th element
-			i--                                                // compensate for the removed element by decrementing the index
-		}
-	}
-
-	// 检查sections后2项如果ImageUrls数量是1或者3,则删掉该section(是网页图标,封面宣传图)
-	for i := len(sections) - 2; i < len(sections); i++ {
-
-		if len(sections[i].ImageUrls) == 1 || len(sections[i].ImageUrls) == 3 {
+	// 检查sections中，如果section.Text中有"爱 · 你 · 所 · 爱" 或 "爱你所爱" 文字时，则删掉该section
+	for i := 0; i < len(sections); i++ {
+		if strings.Contains(sections[i].Text, "爱 · 你 · 所 · 爱") || strings.Contains(sections[i].Text, "爱你所爱") {
 			sections = append(sections[:i], sections[i+1:]...)
-			i--
+			i-- // compensate for the removed element by decrementing the index
 		}
 	}
-
 	return sections
 }

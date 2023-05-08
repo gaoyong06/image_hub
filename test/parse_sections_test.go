@@ -29,7 +29,10 @@ func TestParseSections(t *testing.T) {
 	htmlStr1 := string(htmlBytes)
 
 	// 解析HTML字符串为Section数组
-	sections := spiders.ParseSectionsFromHTML(htmlStr1)
+	sections, err := spiders.ParseSectionsFromHTML(htmlStr1, nil, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// 打印结果
 	for _, section := range sections {

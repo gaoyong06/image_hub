@@ -16,7 +16,19 @@ import (
 
 func TestSeevanlove(t *testing.T) {
 
+	// 检查重复图片的目录
+	dir := "D:/work/wechat_download_data/html/Dump-0422-20-12-37/"
+
+	// 待测试的文件
 	file := "D:/work/wechat_download_data/html/Dump-0422-20-12-37/20230315_222813_1.html"
+
+	// 计算目录下的html内的img标签重复的data-src
+	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir)
+	if err != nil {
+		panic(err)
+	}
+
+	// fmt.Printf("\n\n ========================= dataSrcRepeat =====================\n\n %#v \n", dataSrcRepeat)
 
 	// 读取file的内容
 	htmlBytes, err := ioutil.ReadFile(file)
@@ -25,8 +37,15 @@ func TestSeevanlove(t *testing.T) {
 	}
 	htmlStr := string(htmlBytes)
 
+	imageTypes := []string{
+		"avatar",
+	}
+
 	// 解析HTML字符串为Section数组
-	sections := spiders.ParseSectionsFromHTML(htmlStr)
+	sections, err := spiders.ParseSectionsFromHTML(htmlStr, imageTypes, dataSrcRepeat)
+	if err != nil {
+		t.Errorf("err: %#v\n", err)
+	}
 
 	// 打印结果
 	for _, section := range sections {
@@ -34,13 +53,9 @@ func TestSeevanlove(t *testing.T) {
 	}
 
 	// 使用json打印出Section数组
-	jsonSection, err := json.Marshal(sections)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	fmt.Println("=====================================")
-	fmt.Println(string(jsonSection))
+	// fmt.Println("=====================================")
+	// fmt.Println(string(jsonSection))
 
 	onePageSpider := spiders.NewOnePage(spiders.OnePage)
 
@@ -80,19 +95,20 @@ func TestSeevanlove(t *testing.T) {
 		DOM: doc.Find("html"),
 	}
 
-	article, err := onePageSpider.ParseData(nil, e, "")
+	article, err := onePageSpider.ParseData(nil, e, "", dataSrcRepeat)
 	if err != nil {
 
 		panic(err)
 	}
 
 	// 使用json打印出article
+	// 使用json打印article
 	jsonArticle, err := json.Marshal(article)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	fmt.Println("================ jsonArticle =====================")
+	fmt.Println("\n\n============== jsonArticle =======================")
 	fmt.Println(string(jsonArticle))
 
 }

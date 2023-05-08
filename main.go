@@ -79,6 +79,12 @@ func Init() error {
 
 func Run() {
 
+	// 计算目录下的html内的img标签重复的data-src
+	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir)
+	if err != nil {
+		panic(err)
+	}
+
 	// request local files
 	// https://github.com/gocolly/colly/blob/master/_examples/local_files/local_files.go
 	t := &http.Transport{}
@@ -86,7 +92,6 @@ func Run() {
 
 	// Collector
 	// 爬取本地文件时,不用设置AllowedDomains
-
 	c := colly.NewCollector(
 		colly.AllowURLRevisit(),
 	)
@@ -141,12 +146,11 @@ func Run() {
 		fmt.Printf("=============== c.OnHTML: [%d]%s, %s\n", e.Request.ID, urlType, e.Request.URL)
 
 		onePageSpider := spiders.NewOnePage(spiders.OnePage)
-		err := onePageSpider.Process(onePageSpider, q, e, "")
+		err := onePageSpider.Process(onePageSpider, q, e, "", dataSrcRepeat)
 		if err != nil {
 			log.Errorf("onePageSpider.Process failed. err: %s\n", err)
 			fmt.Printf("onePageSpider.Process failed. err: %s\n", err)
 		}
-
 	})
 
 	// OnScraped中获取的urlType参数错误,先忽略
@@ -170,11 +174,12 @@ func Run() {
 
 	// 遍历目录D:\work\wechat_download_data\html\Dump-0421-11-15-39下的所有html文件
 	// html文件名规则为："%Y%m%d_%H%M%S"_"序号.html", 例如: 20230109_111900_1.html
+
 	// Define the regular expression to match the file names
 	re := regexp.MustCompile(`(\d{8}_\d{6})_(\d+)\.html`)
 
 	// Traverse the directory and process each file
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 
 		if err != nil {
 			return err
