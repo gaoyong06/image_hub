@@ -27,7 +27,7 @@ func NewUnknownPage(name string) Spider {
 
 // 向队列追求爬取请求
 // 不规范的文案，暂时不做处理
-func (s *unknownPage) AddReqToQueue(q *queue.Queue, i interface{}, path string) error {
+func (s *unknownPage) AddReqToQueue(q *queue.Queue, i interface{}, params map[string]interface{}) error {
 
 	return nil
 }

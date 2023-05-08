@@ -95,7 +95,10 @@ func TestSeevanlove(t *testing.T) {
 		DOM: doc.Find("html"),
 	}
 
-	article, err := onePageSpider.ParseData(nil, e, "", dataSrcRepeat)
+	params := map[string]interface{}{
+		"dataSrcRepeat": dataSrcRepeat,
+	}
+	article, err := onePageSpider.ParseData(nil, e, params)
 	if err != nil {
 
 		panic(err)

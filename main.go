@@ -79,11 +79,13 @@ func Init() error {
 
 func Run() {
 
+	params := make(map[string]interface{})
 	// 计算目录下的html内的img标签重复的data-src
 	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir)
 	if err != nil {
 		panic(err)
 	}
+	params["dataSrcRepeat"] = dataSrcRepeat
 
 	// request local files
 	// https://github.com/gocolly/colly/blob/master/_examples/local_files/local_files.go
@@ -146,7 +148,7 @@ func Run() {
 		fmt.Printf("=============== c.OnHTML: [%d]%s, %s\n", e.Request.ID, urlType, e.Request.URL)
 
 		onePageSpider := spiders.NewOnePage(spiders.OnePage)
-		err := onePageSpider.Process(onePageSpider, q, e, "", dataSrcRepeat)
+		err := onePageSpider.Process(onePageSpider, q, e, params)
 		if err != nil {
 			log.Errorf("onePageSpider.Process failed. err: %s\n", err)
 			fmt.Printf("onePageSpider.Process failed. err: %s\n", err)
@@ -249,11 +251,12 @@ func Run() {
 		// 替换 \ 为 /
 		// D:\work\wechat_download_data\html\test\20220526_111900_1.html
 		// D:/work/wechat_download_data/html/test/20220526_111900_1.html
-		path = strings.ReplaceAll(path, "\\", "/")
+		params["path"] = strings.ReplaceAll(path, "\\", "/")
 
 		// Process the file with the selected spider
-		fmt.Printf("==============  spider.AddReqToQueue. title: %+v, spider: %+v,  path: %+v\n", title, spider.GetName(), path)
-		err = spider.AddReqToQueue(q, nil, path)
+		fmt.Printf("==============  spider.AddReqToQueue. title: %+v, spider: %+v,  path: %+v\n", title, spider.GetName(), params["path"])
+
+		err = spider.AddReqToQueue(q, nil, params)
 		if err != nil {
 			return err
 		}

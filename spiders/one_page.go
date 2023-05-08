@@ -33,10 +33,10 @@ func NewOnePage(name string) Spider {
 
 // 解析将爬取到的数据至一个规范的结构体中
 // e *colly.HTMLElement 或者  *colly.Response
-func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string, params interface{}) (interface{}, error) {
+func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]interface{}) (interface{}, error) {
 
-	dataSrcRepeat := params
-	articleBase, err := s.baseSpider.ParseData(q, i, baseUrl, params)
+	dataSrcRepeat := params["dataSrcRepeat"].([]string)
+	articleBase, err := s.baseSpider.ParseData(q, i, params)
 	if err != nil {
 		return nil, fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
 	}
@@ -81,7 +81,7 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string, param
 	imageTypes := []string{"avatar", "wallpaper"}
 	fmt.Printf("================== imageTypes: %#v\n", imageTypes)
 	// Parse the HTML string to extract the sections
-	sections, err := ParseSectionsFromHTML(htmlStr, imageTypes, dataSrcRepeat.([]string))
+	sections, err := ParseSectionsFromHTML(htmlStr, imageTypes, dataSrcRepeat)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse sections from HTML: %v", err)
 	}
@@ -100,5 +100,4 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, baseUrl string, param
 
 	article.Sections = sections
 	return article, nil
-
 }
