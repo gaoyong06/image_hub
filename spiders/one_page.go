@@ -31,7 +31,16 @@ func NewOnePage(name string) Spider {
 	}
 }
 
-// 解析将爬取到的数据至一个规范的结构体中
+// 解析将爬取到的数据至一个规范的结构体中\
+// 对于公众号内内容的处理，有下面几个步骤
+//  1. 读取被解析html目录下的所有html文件内的图片，得到重复的图片文件列表(这些图片文件基本都是页面图标，配图，宣传图)
+//  2. 遍历各个html文件，读取html文本,通过关键字判断内容是哪些(会有多个)类型. 图片类型包括：头像,背景图，壁纸，表情包4种
+//  3. 根据2. 得到的图片内容类型，对该html内的所有图片按相应的类型规格做过滤，规格要求包括：宽度范围，高度范围，宽高比范围，文件大小范围，将不合法的图片过滤掉
+//  4. 将过滤后的内容通过ParseSectionsFromHTML处理,解析出html的各个sections
+//  5. 在各个公众号的自定义函数内，在对3.解析后的sections做微调，过滤掉不规范的section得到最终的sections(有可能该篇公众号内容是壁纸,但是里面有一个宣传图的尺寸等规格，和壁纸是类似的，在3.处未过滤掉)
+//  6. 对sections的微调，一般通过section.Text的文本特征(例如：固定的文案)，或section在sections内的index，这个不可控，得具体情况具体分析，各个公众号，一个公众号内不同时间阶段的文章结构会有不同
+//  7. 最终得到sections组装到该html解析到的Article结构体中，就完成了从一个page的html字符串至Article结构体的解析
+//
 // e *colly.HTMLElement 或者  *colly.Response
 func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]interface{}) (interface{}, error) {
 
