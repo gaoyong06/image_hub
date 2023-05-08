@@ -77,11 +77,8 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]int
 	htmlBytes := e.Response.Body
 	htmlStr := string(htmlBytes)
 
-	// imageTypes := GetImageTypes(article.Title, article.Tags)
-	imageTypes := []string{"avatar", "wallpaper"}
-	fmt.Printf("================== imageTypes: %#v\n", imageTypes)
 	// Parse the HTML string to extract the sections
-	sections, err := ParseSectionsFromHTML(htmlStr, imageTypes, dataSrcRepeat)
+	sections, err := ParseSectionsFromHTML(htmlStr, dataSrcRepeat)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse sections from HTML: %v", err)
 	}

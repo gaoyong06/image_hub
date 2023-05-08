@@ -74,30 +74,29 @@ var (
 )
 
 // 根据公众号标题和标签,确定公众号文章内图片类型
-func GetImageTypes(title string, tags []string) []string {
+func GetHtmlImageTypes(htmlStr string) []string {
 
 	// 判断文章内的图片类型都有哪些
-	titleTagStr := title + "," + strings.Join(tags, ",")
 
 	var imageTypes []string
 
-	if strings.Contains(titleTagStr, "头像") {
+	if strings.Contains(htmlStr, "头像") {
 		imageTypes = append(imageTypes, "avatar")
 	}
 
-	if strings.Contains(titleTagStr, "背景") {
+	if strings.Contains(htmlStr, "背景") {
 		imageTypes = append(imageTypes, "background", "wallpaper")
 	}
 
-	if strings.Contains(titleTagStr, "套图") {
+	if strings.Contains(htmlStr, "套图") {
 		imageTypes = append(imageTypes, "avatar", "background")
 	}
 
-	if strings.Contains(titleTagStr, "壁纸") {
+	if strings.Contains(htmlStr, "壁纸") {
 		imageTypes = append(imageTypes, "wallpaper")
 	}
 
-	if strings.Contains(titleTagStr, "表情") {
+	if strings.Contains(htmlStr, "表情") {
 		imageTypes = append(imageTypes, "sticker")
 	}
 
@@ -106,9 +105,13 @@ func GetImageTypes(title string, tags []string) []string {
 
 // 从HTML字符串中解析出Section数组，包含文字和图片
 // htmlStr 待解析的html字符串
-// imageType html字符串中图片预期的类型(头像, 背景...)，可选值有avatart, background, wallpaper,sticker
+//
 // dataSrcRepeat htmlStr所在的文件目录内的所有html中，重复的图片构成的数组
-func ParseSectionsFromHTML(htmlStr string, imageTypes []string, dataSrcRepeat []string) ([]model.Section, error) {
+func ParseSectionsFromHTML(htmlStr string, dataSrcRepeat []string) ([]model.Section, error) {
+
+	// html字符串中图片预期的类型(头像, 背景...)，可选值有avatart, background, wallpaper,sticker
+	imageTypes := GetHtmlImageTypes(htmlStr)
+	fmt.Printf("================== imageTypes: %#v\n", imageTypes)
 
 	doc, err := html.Parse(strings.NewReader(htmlStr))
 	if err != nil {

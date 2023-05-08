@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,7 +16,6 @@ import (
 	"image_hub/model"
 	"image_hub/spiders"
 
-	"github.com/PuerkitoBio/goquery"
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
@@ -172,7 +172,6 @@ func Run() {
 	// Determine which spider to use based on the file count and file name
 	var spider spiders.Spider
 	onePageSpider := spiders.NewOnePage(spiders.OnePage)
-	unknownPageSpider := spiders.NewUnknownPage(spiders.UnknownPage)
 
 	// 遍历目录D:\work\wechat_download_data\html\Dump-0421-11-15-39下的所有html文件
 	// html文件名规则为："%Y%m%d_%H%M%S"_"序号.html", 例如: 20230109_111900_1.html
@@ -210,52 +209,29 @@ func Run() {
 		}
 		defer file.Close()
 
-		// 使用 goquery 解析 HTML
-		doc, err := goquery.NewDocumentFromReader(file)
+		htmlBytes, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
 		}
+		htmlStr := string(htmlBytes)
 
-		// 标题
-		selector := "meta[property='og:title']"
-		title, _ := doc.Find(selector).Attr("content")
-
-		// 标签
-		var tags []string
-		selector = ".article-tag__item"
-		doc.Find(".article-tag__item").Each(func(i int, s *goquery.Selection) {
-			tag := s.Text()
-			fmt.Printf("tag: %+v\n", tag)
-			// Add tag to an array
-			// 使用一个切片保存 html 中所有 .article-tag__item 的值
-			tags = append(tags, tag)
-		})
-
-		titleTagStr := title + "," + strings.Join(tags, ",")
-
-		if strings.Contains(titleTagStr, "头像") ||
-			strings.Contains(titleTagStr, "背景") ||
-			strings.Contains(titleTagStr, "背景图") ||
-			strings.Contains(titleTagStr, "套图") ||
-			strings.Contains(titleTagStr, "壁纸") ||
-			strings.Contains(titleTagStr, "表情") ||
-			strings.Contains(titleTagStr, "表情包") {
+		// html内的图片类型(头像，壁纸，背景图，表情包)
+		imageTypes := spiders.GetHtmlImageTypes(htmlStr)
+		if len(imageTypes) > 0 {
 			spider = onePageSpider
 		} else {
-			spider = unknownPageSpider
 			log.Warnf("no matching spider found for file %s", d.Name())
 			fmt.Printf("==== no matching spider found for file %s", d.Name())
+			return nil
 		}
 
-		fmt.Printf("==== title: %+v, spider: %+v\n", title, spider.GetName())
 		// 替换 \ 为 /
 		// D:\work\wechat_download_data\html\test\20220526_111900_1.html
 		// D:/work/wechat_download_data/html/test/20220526_111900_1.html
 		params["path"] = strings.ReplaceAll(path, "\\", "/")
 
 		// Process the file with the selected spider
-		fmt.Printf("==============  spider.AddReqToQueue. title: %+v, spider: %+v,  path: %+v\n", title, spider.GetName(), params["path"])
-
+		fmt.Printf("==============  spider.AddReqToQueue. spider: %+v,  path: %+v\n", spider.GetName(), params["path"])
 		err = spider.AddReqToQueue(q, nil, params)
 		if err != nil {
 			return err
