@@ -84,9 +84,9 @@ func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}
 	imgTags := imgRegex.FindAllString(htmlStr, -1)
 
 	for _, imgTag := range imgTags {
+
 		// 获取当前img标签的内容
-		imgTagContent := imgTag
-		fmt.Printf("============ imgTagContent: %s\n", imgTagContent)
+		fmt.Printf("============ imgTag: %s\n", imgTag)
 
 		var imgSrc string
 		// 获取图片的源URL
@@ -128,32 +128,37 @@ func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}
 
 		// Generate overlay text displaying image information in the top right corner
 		imgInfoOverlay := fmt.Sprintf(`
-			<div style="position:absolute; top: 0; right: 0; padding: 10px; background-color: rgba(0,255,0,0.5); color: white; font-size: 12px; font-weight: bold;">
-				Ratio: %f<br>Width: %f<br>Height: %f<br>Format: %s<br>Type: %s<br>Shape: %s<br>Size: %s kb
+			<div style="position:absolute; top: 0; right: 0; transform: translate(-10px, 10px); padding: 10px; background-color: rgba(0,255,0,0.5); color: white; font-size: 12px; ">
+		
+				<span style="display: block;">Ratio:  %f</span>
+				<span style="display: block;">Width:  %f</span>
+				<span style="display: block;">Height:  %f</span>
+				<span style="display: block;">Format: %s</span>
+				<span style="display: block; border: 2px solid red; padding: 5px;">Type: %s</span>
+				<span style="display: block;">Shape:  %s</span>
+				<span style="display: block;">Size: %s </span>
+
 			</div>`, curImgInfo["ratio"], curImgInfo["width"], curImgInfo["height"], curImgInfo["format"], curImgInfo["type"], curImgInfo["shape"], convert2KB(imgSize))
-
-		//获取img标签内的内容
-		tagContentRegex, _ := regexp.Compile(`<img.*?>(.*?)`)
-		tagContentMatch := tagContentRegex.FindStringSubmatch(imgTagContent)
-
-		fmt.Printf("========================== tagContentMatch[1]: %s\n", tagContentMatch)
 
 		//为新的img标签添加在img标签内的内容、以及img标签自身的class等样式
 		newImgTag := fmt.Sprintf(`
 			<div style="position:relative">
-					<img src="%s" class="%s" style="%s max-width: 100%%; height: auto; display: block;  border:2px solid %s;">
+					<img src="%s" class="%s" style="%s border:2px solid %s;">
 				%s
 			</div>`,
 			imgSrc,
 			strings.Join(getClasses(imgTag), " "),
 			getStyle(imgTag),
 			borderColor,
-			// tagContentMatch[1],
 			imgInfoOverlay,
 		)
 
 		// 修改对应img标签的内容
-		newHtmlStr = strings.Replace(newHtmlStr, imgTagContent, newImgTag, -1)
+		fmt.Printf("=========================== START ============================\n")
+		fmt.Printf("=========================== imgTag: %#v\n", imgTag)
+		fmt.Printf("=========================== newImgTag: %#v\n", newImgTag)
+		fmt.Printf("=========================== ENB ============================\n\n")
+		newHtmlStr = strings.Replace(newHtmlStr, imgTag, newImgTag, -1)
 	}
 
 	return newHtmlStr
