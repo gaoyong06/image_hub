@@ -45,9 +45,9 @@ var (
 
 	// 图片尺寸范围
 	imageDimensionRange = map[string]map[string]float64{
-		"avatar":     {"minWidth": 360, "maxWidth": 1080, "minHeight": 360, "maxHeight": 1200},
-		"background": {"minWidth": 500, "maxWidth": 1395, "minHeight": 500, "maxHeight": 1920},
-		"wallpaper":  {"minWidth": 300, "maxWidth": 1188, "minHeight": 400, "maxHeight": 2376},
+		"avatar":     {"minWidth": 360, "maxWidth": 1600, "minHeight": 360, "maxHeight": 1600},
+		"background": {"minWidth": 500, "maxWidth": 1600, "minHeight": 500, "maxHeight": 1920},
+		"wallpaper":  {"minWidth": 300, "maxWidth": 1395, "minHeight": 400, "maxHeight": 2376},
 		"sticker":    {"minWidth": 180, "maxWidth": 1080, "minHeight": 180, "maxHeight": 1080},
 	}
 
@@ -55,7 +55,7 @@ var (
 	imageSizeRange = map[string]map[string]float64{
 		"avatar":     {"minSize": 1024 * 10, "maxSize": 1024 * 1024 * 10}, // 10kb~10MB
 		"background": {"minSize": 1024 * 10, "maxSize": 1024 * 1024 * 10}, // 10kb~10MB
-		"wallpaper":  {"minSize": 1024 * 6, "maxSize": 1024 * 1024 * 20},  // 10kb~20MB
+		"wallpaper":  {"minSize": 1024 * 5, "maxSize": 1024 * 1024 * 20},  // 5kb~20MB
 		"sticker":    {"minSize": 1024 * 5, "maxSize": 1024 * 1024 * 4},   // 5kb~4MB
 	}
 
@@ -63,14 +63,14 @@ var (
 	imageFormatRange = map[string][]string{
 		"avatar":     {"jpg", "jpeg", "png", "webp"},
 		"background": {"jpg", "jpeg", "png", "webp"},
-		"wallpaper":  {"jpg", "jpeg", "png", "webp"},
+		"wallpaper":  {"jpg", "jpeg", "png", "webp", "gif"},
 		"sticker":    {"jpg", "jpeg", "png", "webp", "gif"},
 	}
 
 	// 图片宽高比范围
 	imageRatioRange = map[string]map[string]float64{
 		"avatar":     {"min": 0.70, "max": 1.30},
-		"background": {"min": 0.80, "max": 1.20},
+		"background": {"min": 0.58, "max": 1.20},
 		"wallpaper":  {"min": 0.97, "max": 2.17},
 		"sticker":    {"min": 0.15, "max": 1.14},
 	}
@@ -282,6 +282,8 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 //	返回结果是每个图片一个map
 func GetImagesInfoFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, error) {
 
+	fmt.Printf("================ GetImagesInfoFromHTML htmlUrl=%s\n", htmlUrl)
+
 	// 用正则表达式在HTML字符串中查找img标签
 	imgRegex, err := regexp.Compile(`<img.*?src=["|'](.*?)["|'].*?>`)
 	if err != nil {
@@ -411,6 +413,7 @@ func IsValidImage(imgStr string, imagesInfo []map[string]interface{}, imageTypes
 //	而手机壁纸是竖向的长方形，宽度小，高度高，高度比宽度要高很多；而表情包，尺寸上，一般比头像小，宽高比和头像相差不大，文件物理尺寸上一般比头像小一些
 func InferImageTypeFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, map[string]map[string]interface{}, error) {
 
+	fmt.Printf("================ InferImageTypeFromHTML htmlUrl=%s\n", htmlUrl)
 	imgs, err := GetImagesInfoFromHTML(htmlUrl, htmlStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get images info from HTML: %v", err)

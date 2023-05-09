@@ -37,10 +37,13 @@ func main() {
 	// 1. 定义要读取的目录路径
 	directoryPath := "D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/"
 
+	// 新建文件前缀
+	newFilePrefix := "update_"
+
 	// 记录被过滤图片的json文件名
-	filteredImgsJsonFileName := "filtered_imgs.json"
+	filteredImgsJsonFileName := newFilePrefix + "filtered_imgs.json"
 	// 记录被过滤图片的html文件名
-	filteredImgsJsonHTMLName := "filtered_imgs.html"
+	filteredImgsJsonHTMLName := newFilePrefix + "filtered_imgs.html"
 
 	allFilteredImgs := make(map[string]map[string]interface{})
 
@@ -63,7 +66,7 @@ func main() {
 
 	// 1. 遍历目录中的所有文件，除了以"update_"开头的文件
 	for _, file := range files {
-		if strings.HasPrefix(file.Name(), "update_") {
+		if strings.HasPrefix(file.Name(), newFilePrefix) {
 			skippedFileCount++
 			continue
 		}
@@ -88,6 +91,7 @@ func main() {
 		htmlStr := string(htmlData)
 
 		//获取HTML中的图片信息imgsInfo和需要被过滤的图片filteredImgs
+		fmt.Printf("================ main filePath=%s\n", filePath)
 		imgsInfo, filteredImgs, err := spiders.InferImageTypeFromHTML(filePath, htmlStr)
 		if err != nil {
 			fmt.Println(err)
@@ -117,7 +121,7 @@ func main() {
 	}
 
 	// 将被需要被过滤的文件写入日志文件
-	err = writefilteredImgsToJsonFile(allFilteredImgs, dataSrcRepeat, directoryPath, filteredImgsJsonFileName, filteredImgsJsonHTMLName)
+	err = writefilteredImgsToJsonFile(allFilteredImgs, dataSrcRepeat, newFilePrefix, directoryPath, filteredImgsJsonFileName, filteredImgsJsonHTMLName)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -248,7 +252,7 @@ func convert2KB(size float64) string {
 }
 
 // 将当前目录下被过滤掉的图片写入日志文件
-func writefilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{}, dataSrcRepeat []string, directoryPath, jsonFileName, htmlFileName string) error {
+func writefilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{}, dataSrcRepeat []string, newFilePrefix, directoryPath, jsonFileName, htmlFileName string) error {
 
 	if directoryPath == "" || jsonFileName == "" || htmlFileName == "" {
 		return errors.New("directoryPath, jsonFileName, htmlFileName is required")
@@ -256,14 +260,11 @@ func writefilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{},
 
 	// 将filteredImgs写入key为src的数组
 	// 将dataSrcRepeat写入key为data-src的数组
-	filteredImgsSrc := make(map[string][]string)
-	for k := range filteredImgs {
-		filteredImgsSrc["src"] = append(filteredImgsSrc["src"], k)
-	}
+	data := make(map[string]interface{})
+	data["filteredImgs"] = filteredImgs
+	data["dataSrcRepeat"] = dataSrcRepeat
 
-	filteredImgsSrc["data-src"] = dataSrcRepeat
-
-	filteredImgsJson, err := json.Marshal(filteredImgsSrc)
+	filteredImgsJson, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
@@ -277,11 +278,28 @@ func writefilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{},
 	// 遍历filteredImgsSrc,将里面的图片按key分成组，然后按组的结构将全部信息写入一个html文件中
 	// 生成html文件
 	htmlStr := "<html><head><title>Filtered Images</title></head><body style=\"display: flex; flex-wrap: wrap;\">"
-	for k, v := range filteredImgsSrc {
+	for k, v := range data {
 		htmlStr += fmt.Sprintf("<h2>%s</h2>", k)
-		for _, imgSrc := range v {
-			htmlStr += fmt.Sprintf("<img src=\"%s\" style=\"width: auto; height: auto; max-width: 100%%; max-height: 100%%; margin: 5px; object-fit: contain;\">", imgSrc)
+
+		if k == "filteredImgs" {
+
+			for imgSrc, imgInfo := range v.(map[string]map[string]interface{}) {
+
+				htmlUrl := imgInfo["htmlUrl"].(string)
+
+				// 读取htmlUrl文件名，给文件名增加前缀newFilePrefix
+				htmlUrl = strings.Replace(htmlUrl, ".html", "", -1)
+				htmlUrl = newFilePrefix + htmlUrl + ".html"
+				htmlStr += fmt.Sprintf("<a href=\"%s\" target=\"_blank\"> <img src=\"%s\" style=\"width: auto; height: auto; max-width: 100%%; max-height: 100%%; margin: 5px; object-fit: contain; border: 1px solid blue;\"></a>", htmlUrl, imgSrc)
+			}
 		}
+
+		if k == "dataSrcRepeat" {
+			for _, imgSrc := range v.([]string) {
+				htmlStr += fmt.Sprintf("<img src=\"%s\" style=\"width: auto; height: auto; max-width: 100%%; max-height: 100%%; margin: 5px; object-fit: contain;\">", imgSrc)
+			}
+		}
+
 	}
 	htmlStr += "</body></html>"
 
