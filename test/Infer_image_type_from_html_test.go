@@ -84,7 +84,6 @@ func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}
 	imgTags := imgRegex.FindAllString(htmlStr, -1)
 
 	for _, imgTag := range imgTags {
-
 		// 获取当前img标签的内容
 		imgTagContent := imgTag
 		fmt.Printf("============ imgTagContent: %s\n", imgTagContent)
@@ -133,16 +132,57 @@ func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}
 				Ratio: %f<br>Width: %f<br>Height: %f<br>Format: %s<br>Type: %s<br>Shape: %s<br>Size: %s kb
 			</div>`, curImgInfo["ratio"], curImgInfo["width"], curImgInfo["height"], curImgInfo["format"], curImgInfo["type"], curImgInfo["shape"], convert2KB(imgSize))
 
-		newImgTag := fmt.Sprintf(`<div style="position:relative">
-		<img src="%s" class="custom-class" style="max-width: 100%%; height: auto; display: block; border:2px solid %s;"">
-	%s
-</div>`, imgSrc, borderColor, imgInfoOverlay)
+		//获取img标签内的内容
+		tagContentRegex, _ := regexp.Compile(`<img.*?>(.*?)`)
+		tagContentMatch := tagContentRegex.FindStringSubmatch(imgTagContent)
+
+		fmt.Printf("========================== tagContentMatch[1]: %s\n", tagContentMatch)
+
+		//为新的img标签添加在img标签内的内容、以及img标签自身的class等样式
+		newImgTag := fmt.Sprintf(`
+			<div style="position:relative">
+					<img src="%s" class="%s" style="%s max-width: 100%%; height: auto; display: block;  border:2px solid %s;">
+				%s
+			</div>`,
+			imgSrc,
+			strings.Join(getClasses(imgTag), " "),
+			getStyle(imgTag),
+			borderColor,
+			// tagContentMatch[1],
+			imgInfoOverlay,
+		)
 
 		// 修改对应img标签的内容
 		newHtmlStr = strings.Replace(newHtmlStr, imgTagContent, newImgTag, -1)
 	}
 
 	return newHtmlStr
+}
+
+// 获取class属性值
+func getClasses(input string) []string {
+	classStrings := []string{}
+	re := regexp.MustCompile(`class="([^"]*)"`)
+	matches := re.FindStringSubmatch(input)
+	if len(matches) < 2 {
+		return classStrings
+	}
+
+	classes := matches[1]
+	classStrings = strings.Split(classes, " ")
+
+	return classStrings
+}
+
+// 获取style属性值
+func getStyle(input string) string {
+	re := regexp.MustCompile(`style="([^"]*)"`)
+	match := re.FindStringSubmatch(input)
+	if len(match) < 2 {
+		return ""
+	}
+
+	return match[1]
 }
 
 func convert2KB(size float64) string {
