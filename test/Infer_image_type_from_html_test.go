@@ -1,6 +1,6 @@
 package test
 
-// 写一个测试程序测试spiders.InferImageTypeFromHTML方法，测试程序的逻辑是：
+// 测试程序测试spiders.InferImageTypeFromHTML方法，测试程序的逻辑是：
 // 1. 读取一个目录下的所有html文件
 // 2. 逐个遍历目录下的各个html文件
 // 3. 通过spiders.InferImageTypeFromHTML读取到该html内的所有图片信息(imgsInfo)，需要被过滤的图片信息(filteredImgs)
@@ -28,7 +28,7 @@ import (
 func TestInferImageTypeFromHTML(t *testing.T) {
 
 	// 1. 定义要读取的目录路径
-	directoryPath := "D:/work/wechat_download_data/html/test5/"
+	directoryPath := "D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/"
 
 	// 2. 读取该目录下的所有文件，除了以"update_开头的文件"
 	files, err := ioutil.ReadDir(directoryPath)
@@ -86,7 +86,6 @@ func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}
 	for _, imgTag := range imgTags {
 
 		// 获取当前img标签的内容
-		fmt.Printf("============ imgTag: %s\n", imgTag)
 
 		var imgSrc string
 		// 获取图片的源URL
@@ -100,8 +99,6 @@ func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}
 
 		// 输出匹配到的src属性值
 		imgSrc = matches[0][1]
-
-		fmt.Printf("============ imgSrc: %s\n", imgSrc)
 
 		// 遍历imgsInfo列表，找到对应的图片信息，包括该图片的类型、宽高比、大小、等等
 		var curImgInfo map[string]interface{} // 当前img标签匹配到的图片
@@ -120,25 +117,29 @@ func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}
 
 		// 组装图片信息叠加浮层的样式
 		var borderColor string
+		var backgroundColor string
+
 		if _, ok := filteredImgs[imgSrc]; ok {
 			borderColor = "red"
+			backgroundColor = "rgba(255,0,0,0.5)"
 		} else {
 			borderColor = "green"
+			backgroundColor = "rgba(0,255,0,0.5)"
 		}
 
 		// Generate overlay text displaying image information in the top right corner
 		imgInfoOverlay := fmt.Sprintf(`
-			<div style="position:absolute; top: 0; right: 0; transform: translate(-10px, 10px); padding: 10px; background-color: rgba(0,255,0,0.5); color: white; font-size: 12px; ">
+			<div style="position:absolute; top: 0; right: 0; transform: translate(-10px, 10px); padding: 10px; background-color: %s; color: white; line-height:20px !important; font-size: 12px; z-index:999">
 		
 				<span style="display: block;">Ratio:  %f</span>
 				<span style="display: block;">Width:  %f</span>
 				<span style="display: block;">Height:  %f</span>
 				<span style="display: block;">Format: %s</span>
-				<span style="display: block; border: 2px solid red; padding: 5px;">Type: %s</span>
+				<span style="display: block; border: 1px solid white; padding: 2px;">Type: %s</span>
 				<span style="display: block;">Shape:  %s</span>
 				<span style="display: block;">Size: %s </span>
 
-			</div>`, curImgInfo["ratio"], curImgInfo["width"], curImgInfo["height"], curImgInfo["format"], curImgInfo["type"], curImgInfo["shape"], convert2KB(imgSize))
+			</div>`, backgroundColor, curImgInfo["ratio"], curImgInfo["width"], curImgInfo["height"], curImgInfo["format"], curImgInfo["type"], curImgInfo["shape"], convert2KB(imgSize))
 
 		//为新的img标签添加在img标签内的内容、以及img标签自身的class等样式
 		newImgTag := fmt.Sprintf(`
@@ -154,10 +155,6 @@ func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}
 		)
 
 		// 修改对应img标签的内容
-		fmt.Printf("=========================== START ============================\n")
-		fmt.Printf("=========================== imgTag: %#v\n", imgTag)
-		fmt.Printf("=========================== newImgTag: %#v\n", newImgTag)
-		fmt.Printf("=========================== ENB ============================\n\n")
 		newHtmlStr = strings.Replace(newHtmlStr, imgTag, newImgTag, -1)
 	}
 
