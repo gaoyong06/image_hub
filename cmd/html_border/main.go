@@ -32,12 +32,16 @@ func main() {
 	// 2. 读取该目录下的所有文件，除了以"update_开头的文件"
 	files, err := ioutil.ReadDir(directoryPath)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	// 1. 遍历目录中的所有文件，除了以"update_"开头的文件
 	for _, file := range files {
 		if strings.HasPrefix(file.Name(), "update_") {
+			continue
+		}
+
+		if filepath.Ext(file.Name()) != ".html" {
 			continue
 		}
 
