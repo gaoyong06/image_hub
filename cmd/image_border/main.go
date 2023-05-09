@@ -1,22 +1,26 @@
 package main
 
-// 测试程序的逻辑是：
+// 对HTML文件内的所有图片增加边框和图片信息显示，正常的图片的边框是绿色，浮层背景色是绿色，将被过滤的图片边框是红色，浮层背景色是红色
+// 程序的逻辑是：
 // 1. 读取一个目录下的所有html文件
 // 2. 逐个遍历目录下的各个html文件
 // 3. 通过spiders.InferImageTypeFromHTML读取到该html内的所有图片信息(imgsInfo)，需要被过滤的图片信息(filteredImgs)
 // 4. 在原来的html基础上，对所有的图片增加浮层显示对应图片信息(imgInfo),显示的信息包括
-//图片类型：imgInfo["type"] 取值：avatar，background, wallpaper, sticker
-//图片宽高比：imgInfo["ratio"]
-//图片宽度：imgInfo["width"]
-//图片高度：imgInfo["height"]
-//图片文件类型：imgInfo["format"] 取值：jpg,png,jpeg,webp
-//图片形状：imgInfo["shape"] 取值：vertical,horizontal,square
-//图片文件大小: imgInfo["size"]: 单位：字节，显示时转为KB
-//用样式中的position、top、left、width、height等属性控制浮层大小和位置
+//	图片类型：imgInfo["type"] 取值：avatar，background, wallpaper, sticker
+//	图片宽高比：imgInfo["ratio"]
+//	图片宽度：imgInfo["width"]
+//	图片高度：imgInfo["height"]
+//	图片文件类型：imgInfo["format"] 取值：jpg,png,jpeg,webp
+//	图片形状：imgInfo["shape"] 取值：vertical,horizontal,square
+//	图片文件大小: imgInfo["size"]: 单位：字节，显示时转为KB
+//	用样式中的position、top、left、width、height等属性控制浮层大小和位置
 // 5. 把新的html字符串写入一个新文件，新文件的文件名使用: update_{原来该html文件名}
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"image_hub/pkg/utils"
 	"image_hub/spiders"
 	"io/ioutil"
 	"path/filepath"
@@ -24,10 +28,27 @@ import (
 	"strings"
 )
 
+// 有问题的文件
+// file:///D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/update_20170807_185349_1.html
+// file:///D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/update_20170808_184259_1.html
+
 func main() {
 
 	// 1. 定义要读取的目录路径
 	directoryPath := "D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/"
+
+	// 记录被过滤图片的json文件名
+	filteredImgsJsonFileName := "filtered_imgs.json"
+	// 记录被过滤图片的html文件名
+	filteredImgsJsonHTMLName := "filtered_imgs.html"
+
+	allFilteredImgs := make(map[string]map[string]interface{})
+
+	// 计算目录下的html内的img标签重复的data-src
+	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(directoryPath)
+	if err != nil {
+		panic(err)
+	}
 
 	// 2. 读取该目录下的所有文件，除了以"update_开头的文件"
 	files, err := ioutil.ReadDir(directoryPath)
@@ -35,13 +56,20 @@ func main() {
 		panic(err)
 	}
 
+	fileCount := len(files)
+	successFileCount := 0
+	failedFileCount := 0
+	skippedFileCount := 0
+
 	// 1. 遍历目录中的所有文件，除了以"update_"开头的文件
 	for _, file := range files {
 		if strings.HasPrefix(file.Name(), "update_") {
+			skippedFileCount++
 			continue
 		}
 
 		if filepath.Ext(file.Name()) != ".html" {
+			skippedFileCount++
 			continue
 		}
 
@@ -52,6 +80,7 @@ func main() {
 		htmlData, err := ioutil.ReadFile(filePath)
 		if err != nil {
 			fmt.Println(err)
+			failedFileCount++
 			continue
 		}
 
@@ -59,27 +88,48 @@ func main() {
 		htmlStr := string(htmlData)
 
 		//获取HTML中的图片信息imgsInfo和需要被过滤的图片filteredImgs
-		imgsInfo, filteredImgs, err := spiders.InferImageTypeFromHTML(htmlStr)
+		imgsInfo, filteredImgs, err := spiders.InferImageTypeFromHTML(filePath, htmlStr)
 		if err != nil {
 			fmt.Println(err)
+			failedFileCount++
 			continue
 		}
 
+		// 将filteredImgs合并至allFilteredImgs
+		for k, v := range filteredImgs {
+			allFilteredImgs[k] = v
+		}
+
 		// 4. 在html中添加浮层显示图片信息
-		newHtmlStr := addImageInfoOverlayToHTML(htmlStr, imgsInfo, filteredImgs)
+		newHtmlStr := addImageInfoOverlayToHTML(htmlStr, imgsInfo, filteredImgs, dataSrcRepeat)
 
 		// 5. 把新的html字符串写入一个新文件，新文件的文件名使用: update_{原来该html文件名}
 		newFilePath := filepath.Join(directoryPath, fmt.Sprintf("update_%s", file.Name()))
 		err = ioutil.WriteFile(newFilePath, []byte(newHtmlStr), 0644)
 		if err != nil {
 			fmt.Println(err)
+			failedFileCount++
 			continue
 		}
+
+		successFileCount++
+		fmt.Printf("file: %s done\n", file.Name())
 	}
+
+	// 将被需要被过滤的文件写入日志文件
+	err = writefilteredImgsToJsonFile(allFilteredImgs, dataSrcRepeat, directoryPath, filteredImgsJsonFileName, filteredImgsJsonHTMLName)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("======================== filteredImgsJsonFile done")
+	}
+	panic("============ STOP")
+
+	fmt.Printf("\n\n==================\n\n fileCount: %d\n successFileCount: %d\n failedFileCount: %d\n skippedFileCount: %d\n\n ==================\n\n", fileCount, successFileCount, failedFileCount, skippedFileCount)
 }
 
 // 获取HTML中的图片信息imgsInfo和需要被过滤的图片filteredImgs
-func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}, filteredImgs map[string]map[string]interface{}) string {
+func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}, filteredImgs map[string]map[string]interface{}, dataSrcRepeat []string) string {
 
 	newHtmlStr := htmlStr
 	// 用正则表达式在HTML字符串中查找img标签
@@ -123,6 +173,9 @@ func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}
 		var backgroundColor string
 
 		if _, ok := filteredImgs[imgSrc]; ok {
+			borderColor = "red"
+			backgroundColor = "rgba(255,0,0,0.5)"
+		} else if utils.Contains(dataSrcRepeat, imgSrc) {
 			borderColor = "red"
 			backgroundColor = "rgba(255,0,0,0.5)"
 		} else {
@@ -192,4 +245,52 @@ func getStyle(input string) string {
 
 func convert2KB(size float64) string {
 	return fmt.Sprintf("%.2fKB", size/1000.0)
+}
+
+// 将当前目录下被过滤掉的图片写入日志文件
+func writefilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{}, dataSrcRepeat []string, directoryPath, jsonFileName, htmlFileName string) error {
+
+	if directoryPath == "" || jsonFileName == "" || htmlFileName == "" {
+		return errors.New("directoryPath, jsonFileName, htmlFileName is required")
+	}
+
+	// 将filteredImgs写入key为src的数组
+	// 将dataSrcRepeat写入key为data-src的数组
+	filteredImgsSrc := make(map[string][]string)
+	for k := range filteredImgs {
+		filteredImgsSrc["src"] = append(filteredImgsSrc["src"], k)
+	}
+
+	filteredImgsSrc["data-src"] = dataSrcRepeat
+
+	filteredImgsJson, err := json.Marshal(filteredImgsSrc)
+	if err != nil {
+		return err
+	}
+
+	filteredImgsJsonFile := filepath.Join(directoryPath, jsonFileName)
+	err = ioutil.WriteFile(filteredImgsJsonFile, filteredImgsJson, 0644)
+	if err != nil {
+		return err
+	}
+
+	// 遍历filteredImgsSrc,将里面的图片按key分成组，然后按组的结构将全部信息写入一个html文件中
+	// 生成html文件
+	htmlStr := "<html><head><title>Filtered Images</title></head><body style=\"display: flex; flex-wrap: wrap;\">"
+	for k, v := range filteredImgsSrc {
+		htmlStr += fmt.Sprintf("<h2>%s</h2>", k)
+		for _, imgSrc := range v {
+			htmlStr += fmt.Sprintf("<img src=\"%s\" style=\"width: auto; height: auto; max-width: 100%%; max-height: 100%%; margin: 5px; object-fit: contain;\">", imgSrc)
+		}
+	}
+	htmlStr += "</body></html>"
+
+	// 将html字符串写入文件
+	filteredImgsHtmlFile := filepath.Join(directoryPath, htmlFileName)
+	err = ioutil.WriteFile(filteredImgsHtmlFile, []byte(htmlStr), 0644)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return nil
 }

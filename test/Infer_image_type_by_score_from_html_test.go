@@ -42,7 +42,10 @@ func TestInferImageTypeByScoreFromHTML(t *testing.T) {
 			go func(file os.FileInfo) {
 				defer wg.Done()
 				// Open the file
-				htmlFile, err := os.Open(directoryPath + file.Name())
+
+				htmlUrl := directoryPath + file.Name()
+
+				htmlFile, err := os.Open(htmlUrl)
 				if err != nil {
 					panic(err)
 				}
@@ -56,7 +59,7 @@ func TestInferImageTypeByScoreFromHTML(t *testing.T) {
 				htmlStr := string(htmlBytes)
 
 				// Get image info from HTML using the GetImageInfoFromHTML function
-				imgsInfo, filteredImgs, err := spiders.InferImageTypeFromHTML(htmlStr)
+				imgsInfo, filteredImgs, err := spiders.InferImageTypeFromHTML(htmlUrl, htmlStr)
 				if err != nil {
 					panic(err)
 				}

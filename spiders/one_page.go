@@ -87,7 +87,7 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]int
 	htmlStr := string(htmlBytes)
 
 	// Parse the HTML string to extract the sections
-	sections, err := ParseSectionsFromHTML(htmlStr, dataSrcRepeat)
+	sections, err := ParseSectionsFromHTML(url, htmlStr, dataSrcRepeat)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse sections from HTML: %v", err)
 	}

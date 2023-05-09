@@ -32,6 +32,8 @@ import (
 	_ "image/png"
 )
 
+// file:///D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/update_20170809_173659_1.html
+
 var (
 
 	// 图片类型与理想的尺寸
@@ -43,18 +45,18 @@ var (
 
 	// 图片尺寸范围
 	imageDimensionRange = map[string]map[string]float64{
-		"avatar":     {"minWidth": 360, "minHeight": 360, "maxWidth": 1080, "maxHeight": 1200},
-		"background": {"minWidth": 500, "minHeight": 500, "maxWidth": 1395, "maxHeight": 1920},
-		"wallpaper":  {"minWidth": 600, "minHeight": 900, "maxWidth": 1188, "maxHeight": 2376},
-		"sticker":    {"minWidth": 180, "minHeight": 180, "maxWidth": 1080, "maxHeight": 1080},
+		"avatar":     {"minWidth": 360, "maxWidth": 1080, "minHeight": 360, "maxHeight": 1200},
+		"background": {"minWidth": 500, "maxWidth": 1395, "minHeight": 500, "maxHeight": 1920},
+		"wallpaper":  {"minWidth": 300, "maxWidth": 1188, "minHeight": 400, "maxHeight": 2376},
+		"sticker":    {"minWidth": 180, "maxWidth": 1080, "minHeight": 180, "maxHeight": 1080},
 	}
 
 	// 图片文件大小范围
 	imageSizeRange = map[string]map[string]float64{
-		"avatar":     {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 10}, // 20kb~10MB
-		"background": {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 10}, // 20kb~10MB
-		"wallpaper":  {"minSize": 1024 * 20, "maxSize": 1024 * 1024 * 20}, // 20kb~20MB
-		"sticker":    {"minSize": 1024 * 6, "maxSize": 1024 * 1024 * 4},   // 10kb~4MB
+		"avatar":     {"minSize": 1024 * 10, "maxSize": 1024 * 1024 * 10}, // 10kb~10MB
+		"background": {"minSize": 1024 * 10, "maxSize": 1024 * 1024 * 10}, // 10kb~10MB
+		"wallpaper":  {"minSize": 1024 * 6, "maxSize": 1024 * 1024 * 20},  // 10kb~20MB
+		"sticker":    {"minSize": 1024 * 5, "maxSize": 1024 * 1024 * 4},   // 5kb~4MB
 	}
 
 	// 文件类型范围
@@ -67,7 +69,7 @@ var (
 
 	// 图片宽高比范围
 	imageRatioRange = map[string]map[string]float64{
-		"avatar":     {"min": 0.92, "max": 1.30},
+		"avatar":     {"min": 0.70, "max": 1.30},
 		"background": {"min": 0.80, "max": 1.20},
 		"wallpaper":  {"min": 0.97, "max": 2.17},
 		"sticker":    {"min": 0.15, "max": 1.14},
@@ -108,7 +110,7 @@ func GetHtmlImageTypes(htmlStr string) []string {
 // htmlStr 待解析的html字符串
 //
 // dataSrcRepeat htmlStr所在的文件目录内的所有html中，重复的图片构成的数组
-func ParseSectionsFromHTML(htmlStr string, dataSrcRepeat []string) ([]model.Section, error) {
+func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]model.Section, error) {
 
 	// // html字符串中图片预期的类型(头像, 背景...)，可选值有avatart, background, wallpaper,sticker
 	// imageTypes := GetHtmlImageTypes(htmlStr)
@@ -127,7 +129,7 @@ func ParseSectionsFromHTML(htmlStr string, dataSrcRepeat []string) ([]model.Sect
 
 	// 得到不不符头像，背景图，壁纸，表情包规范的图片
 	var filteredImgSrcs []string
-	_, filteredImgs, err := InferImageTypeFromHTML(htmlStr)
+	_, filteredImgs, err := InferImageTypeFromHTML(htmlUrl, htmlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -276,8 +278,9 @@ func ParseSectionsFromHTML(htmlStr string, dataSrcRepeat []string) ([]model.Sect
 //	height：图片的宽高比
 //	format: 图片的格式
 //	shape：图片的形状(vertical: 垂直的,horizontal: 水平的,square: 正方形)
+//	htmlUrl: 图片所在的html文件地址
 //	返回结果是每个图片一个map
-func GetImagesInfoFromHTML(htmlStr string) ([]map[string]interface{}, error) {
+func GetImagesInfoFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, error) {
 
 	// 用正则表达式在HTML字符串中查找img标签
 	imgRegex, err := regexp.Compile(`<img.*?src=["|'](.*?)["|'].*?>`)
@@ -344,6 +347,7 @@ func GetImagesInfoFromHTML(htmlStr string) ([]map[string]interface{}, error) {
 			imgInfo["height"] = imgHeight
 			imgInfo["format"] = imgFormat
 			imgInfo["size"] = imgSize
+			imgInfo["htmlUrl"] = htmlUrl
 			imgs = append(imgs, imgInfo)
 			mutex.Unlock()
 
@@ -391,27 +395,27 @@ func IsValidImage(imgStr string, imagesInfo []map[string]interface{}, imageTypes
 // 返回一个由图片信息map构成的数组
 // map的key如下：
 //
-//	src: 图片的地址
-//	ratio：图片的宽高比
-//	width：图片的宽度
-//	height：图片的高度
-//	format: 图片的格式
-//	shape：图片的形状(vertical: 垂直的,horizontal: 水平的,square: 正方形)
-//	type：图片的类型(avatar: 头像,background: 背景图,wallpaper: 壁纸,sticker: 表情包, unknown: 未知的类型)
+//		src: 图片的地址
+//		ratio：图片的宽高比
+//		width：图片的宽度
+//		height：图片的高度
+//		format: 图片的格式
+//		shape：图片的形状(vertical: 垂直的,horizontal: 水平的,square: 正方形)
+//		type：图片的类型(avatar: 头像,background: 背景图,wallpaper: 壁纸,sticker: 表情包, unknown: 未知的类型)
+//	 	file: 图片所在的html文件
 //
 // 工作原理：
 //
 //	根据宽度、高度、比例、物理空间大小检查图片
 //	例如头像的图片，更偏向一个正方形，但是不一定绝对是正方形，只是接近于正方形；而背景图，偏向一个横向的长方形，但是宽和高差异也不是特别大；
 //	而手机壁纸是竖向的长方形，宽度小，高度高，高度比宽度要高很多；而表情包，尺寸上，一般比头像小，宽高比和头像相差不大，文件物理尺寸上一般比头像小一些
-func InferImageTypeFromHTML(htmlStr string) ([]map[string]interface{}, map[string]map[string]interface{}, error) {
+func InferImageTypeFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, map[string]map[string]interface{}, error) {
 
-	imgs, err := GetImagesInfoFromHTML(htmlStr)
+	imgs, err := GetImagesInfoFromHTML(htmlUrl, htmlStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get images info from HTML: %v", err)
 	}
 
-	fmt.Printf("============================== GetImagesInfoFromHTML len: %d ==========\n", len(imgs))
 	filteredImgs := make(map[string]map[string]interface{})
 
 	// 判断每种类型的得分并找出得分最高的图片类型
@@ -458,10 +462,10 @@ func InferImageTypeFromHTML(htmlStr string) ([]map[string]interface{}, map[strin
 }
 
 // 根据HTML文本提取所有图片的信息，并返回符合要求的图片信息及被过滤的图片信息
-func GetFilteredImagesInfoFromHTML(htmlStr string, expectedType string, allowedImgFormat []string) ([]map[string]interface{}, []map[string]interface{}, error) {
+func GetFilteredImagesInfoFromHTML(htmlUrl, htmlStr, expectedType string, allowedImgFormat []string) ([]map[string]interface{}, []map[string]interface{}, error) {
 
 	// 调用GetImagesInfoFromHTML提取所有图片信息
-	imgs, err := GetImagesInfoFromHTML(htmlStr)
+	imgs, err := GetImagesInfoFromHTML(htmlUrl, htmlStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get images info from HTML: %v", err)
 	}

@@ -56,7 +56,7 @@ func TestInferImageTypeFromHTML(t *testing.T) {
 		htmlStr := string(htmlData)
 
 		//获取HTML中的图片信息imgsInfo和需要被过滤的图片filteredImgs
-		imgsInfo, filteredImgs, err := spiders.InferImageTypeFromHTML(htmlStr)
+		imgsInfo, filteredImgs, err := spiders.InferImageTypeFromHTML(filePath, htmlStr)
 		if err != nil {
 			t.Error(err)
 			continue

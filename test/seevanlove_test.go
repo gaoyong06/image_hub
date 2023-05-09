@@ -38,7 +38,7 @@ func TestSeevanlove(t *testing.T) {
 	htmlStr := string(htmlBytes)
 
 	// 解析HTML字符串为Section数组
-	sections, err := spiders.ParseSectionsFromHTML(htmlStr, dataSrcRepeat)
+	sections, err := spiders.ParseSectionsFromHTML(file, htmlStr, dataSrcRepeat)
 	if err != nil {
 		t.Errorf("err: %#v\n", err)
 	}
