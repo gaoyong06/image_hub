@@ -56,7 +56,7 @@ func TestInferImageTypeByScoreFromHTML(t *testing.T) {
 				htmlStr := string(htmlBytes)
 
 				// Get image info from HTML using the GetImageInfoFromHTML function
-				imgsInfo, filteredImgs, err := spiders.InferImageTypeByScoreFromHTML(htmlStr)
+				imgsInfo, filteredImgs, err := spiders.InferImageTypeFromHTML(htmlStr)
 				if err != nil {
 					panic(err)
 				}

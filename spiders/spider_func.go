@@ -127,7 +127,7 @@ func ParseSectionsFromHTML(htmlStr string, dataSrcRepeat []string) ([]model.Sect
 
 	// 得到不不符头像，背景图，壁纸，表情包规范的图片
 	var filteredImgSrcs []string
-	_, filteredImgs, err := InferImageTypeByScoreFromHTML(htmlStr)
+	_, filteredImgs, err := InferImageTypeFromHTML(htmlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -404,7 +404,7 @@ func IsValidImage(imgStr string, imagesInfo []map[string]interface{}, imageTypes
 //	根据宽度、高度、比例、物理空间大小检查图片
 //	例如头像的图片，更偏向一个正方形，但是不一定绝对是正方形，只是接近于正方形；而背景图，偏向一个横向的长方形，但是宽和高差异也不是特别大；
 //	而手机壁纸是竖向的长方形，宽度小，高度高，高度比宽度要高很多；而表情包，尺寸上，一般比头像小，宽高比和头像相差不大，文件物理尺寸上一般比头像小一些
-func InferImageTypeByScoreFromHTML(htmlStr string) ([]map[string]interface{}, []map[string]interface{}, error) {
+func InferImageTypeFromHTML(htmlStr string) ([]map[string]interface{}, map[string]map[string]interface{}, error) {
 
 	imgs, err := GetImagesInfoFromHTML(htmlStr)
 	if err != nil {
@@ -412,8 +412,7 @@ func InferImageTypeByScoreFromHTML(htmlStr string) ([]map[string]interface{}, []
 	}
 
 	fmt.Printf("============================== GetImagesInfoFromHTML len: %d ==========\n", len(imgs))
-
-	var filteredImgs []map[string]interface{}
+	filteredImgs := make(map[string]map[string]interface{})
 
 	// 判断每种类型的得分并找出得分最高的图片类型
 	for _, imgInfo := range imgs {
@@ -451,7 +450,7 @@ func InferImageTypeByScoreFromHTML(htmlStr string) ([]map[string]interface{}, []
 		// 归类并筛选出符合条件的图片信息
 		if (maxType == "unknown") || ((imgInfo["size"].(float64) < imageSizeRange[maxType]["minSize"]) || (imgInfo["size"].(float64) > imageSizeRange[maxType]["maxSize"]) ||
 			(imgInfo["ratio"].(float64) < imageRatioRange[maxType]["min"]) || (imgInfo["ratio"].(float64) > imageRatioRange[maxType]["max"])) {
-			filteredImgs = append(filteredImgs, imgInfo)
+			filteredImgs[imgInfo["src"].(string)] = imgInfo
 		}
 	}
 
