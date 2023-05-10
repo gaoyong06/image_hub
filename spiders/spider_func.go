@@ -23,7 +23,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 
@@ -112,9 +111,6 @@ func GetHtmlImageTypes(htmlStr string) []string {
 // dataSrcRepeat htmlStr所在的文件目录内的所有html中，重复的图片构成的数组
 func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]model.Section, error) {
 
-	// // html字符串中图片预期的类型(头像, 背景...)，可选值有avatart, background, wallpaper,sticker
-	// imageTypes := GetHtmlImageTypes(htmlStr)
-	// fmt.Printf("================== imageTypes: %#v\n", imageTypes)
 	doc, err := html.Parse(strings.NewReader(htmlStr))
 	if err != nil {
 		return nil, err
@@ -122,12 +118,7 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 
 	var sections []model.Section
 
-	// images, err := GetImagesInfoFromHTML(htmlStr)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// 得到不不符头像，背景图，壁纸，表情包规范的图片
+	// 获取不符合规则(不是头像，背景图，壁纸，表情包规范)的图片
 	var filteredImgSrcs []string
 	_, filteredImgs, err := InferImageTypeFromHTML(htmlUrl, htmlStr)
 	if err != nil {
@@ -202,12 +193,6 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 
 				return true
 			}
-
-			// 判断图片的长，宽，大小，宽高比，文件类型(jpg,png,gif...)与图片预期的类型(头像，背景图，壁纸，表情包)是否一致，不一致的过滤掉
-			// if len(imageTypes) > 0 && !IsValidImage(src, images, imageTypes) {
-			// 	fmt.Printf("========================= !IsValidImage. src: %s\n", src)
-			// 	return true
-			// }
 		}
 		return false
 	}
@@ -359,39 +344,6 @@ func GetImagesInfoFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, e
 	return imgs, nil
 }
 
-// 检查图片文件信息是否和imageType一致
-func IsValidImage(imgStr string, imagesInfo []map[string]interface{}, imageTypes []string) bool {
-
-	//遍历imagesInfo，找到imagesInfo中，image["src"]==imgStr的项
-	for _, image := range imagesInfo {
-
-		if image["src"] == imgStr {
-
-			//得到图片的宽度，高度，宽高比，大小
-			imgWidth := image["width"].(float64)
-			imgHeight := image["height"].(float64)
-			imgSize := image["size"].(float64)
-			imgRatio := image["ratio"].(float64)
-			imgFormat := image["format"].(string)
-
-			//与上面定义的对应imageTypes其中之一是否匹配，匹配返回true, 全部不匹配则返回false
-			for _, imageType := range imageTypes {
-				if imageDimensionRange[imageType]["minWidth"] <= imgWidth && imgWidth <= imageDimensionRange[imageType]["maxWidth"] &&
-					imageDimensionRange[imageType]["minHeight"] <= imgHeight && imgHeight <= imageDimensionRange[imageType]["maxHeight"] &&
-					imageSizeRange[imageType]["minSize"] <= imgSize && imgSize <= imageSizeRange[imageType]["maxSize"] &&
-
-					utils.Contains(imageFormatRange[imageType], imgFormat) &&
-					imageRatioRange[imageType]["min"] <= imgRatio && imgRatio <= imageRatioRange[imageType]["max"] {
-					return true
-				}
-			}
-			break
-		}
-	}
-	return false
-
-}
-
 // 根据图片的宽度，高度，大小，格式，尺寸，宽高比打分计算推断图片的类型（类型：头像,背景图，壁纸，表情包, 未知）
 // 返回一个由图片信息map构成的数组
 // map的key如下：
@@ -463,41 +415,6 @@ func InferImageTypeFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, 
 }
 
 // 根据HTML文本提取所有图片的信息，并返回符合要求的图片信息及被过滤的图片信息
-func GetFilteredImagesInfoFromHTML(htmlUrl, htmlStr, expectedType string, allowedImgFormat []string) ([]map[string]interface{}, []map[string]interface{}, error) {
-
-	// 调用GetImagesInfoFromHTML提取所有图片信息
-	imgs, err := GetImagesInfoFromHTML(htmlUrl, htmlStr)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get images info from HTML: %v", err)
-	}
-
-	// 处理不符合要求的图片，将其从imgs中删除，并添加到filteredImgs
-	var filteredImgs []map[string]interface{}
-	for i := len(imgs) - 1; i >= 0; i-- {
-
-		img := imgs[i]
-
-		// 检查图片格式是否符合要求。如果不符合要求，将其从imgs中删除
-		count := lo.Count(allowedImgFormat, img["format"].(string))
-		isAllowedImgFormat := false
-		if count > 0 { // not allowed format, remove image from imgs and add to filteredImgs.  (This is a reverse of RemoveImageFrom
-			isAllowedImgFormat = true
-		}
-
-		// img["type"]只是参考, 还依赖于文件大小与宽高比
-		if img["type"] != expectedType && (img["size"].(float64) < imageSizeRange[expectedType]["minSize"] ||
-			img["size"].(float64) > imageSizeRange[expectedType]["maxSize"] ||
-			img["ratio"].(float64) < imageRatioRange[expectedType]["min"] ||
-			img["ratio"].(float64) > imageRatioRange[expectedType]["max"]) || !isAllowedImgFormat {
-
-			filteredImgs = append(filteredImgs, img)
-			imgs = append(imgs[:i], imgs[i+1:]...)
-		}
-	}
-
-	return imgs, filteredImgs, nil
-}
-
 // 读取directoryPath所有html的文件将各个文件中的img标签的data-src内的值取出来如果重复出现(出现次数大于1),则记录下来返回
 func GetImageDataSrcRepeat(directoryPath string) ([]string, error) {
 
