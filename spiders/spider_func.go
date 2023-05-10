@@ -285,11 +285,10 @@ func GetImagesInfoFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, e
 	fmt.Printf("================ GetImagesInfoFromHTML htmlUrl=%s\n", htmlUrl)
 
 	// 用正则表达式在HTML字符串中查找img标签
-	imgRegex, err := regexp.Compile(`<img.*?src=["|'](.*?)["|'].*?>`)
+	imgTags, err := utils.GetImgTagsFromHTML(htmlStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to compile imgRegex: %v", err)
 	}
-	imgTags := imgRegex.FindAllString(htmlStr, -1)
 
 	// 遍历每个img标签，通过宽度、高度、比例、物理空间大小过滤图片
 	var imgs []map[string]interface{}
@@ -413,7 +412,6 @@ func IsValidImage(imgStr string, imagesInfo []map[string]interface{}, imageTypes
 //	而手机壁纸是竖向的长方形，宽度小，高度高，高度比宽度要高很多；而表情包，尺寸上，一般比头像小，宽高比和头像相差不大，文件物理尺寸上一般比头像小一些
 func InferImageTypeFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, map[string]map[string]interface{}, error) {
 
-	fmt.Printf("================ InferImageTypeFromHTML htmlUrl=%s\n", htmlUrl)
 	imgs, err := GetImagesInfoFromHTML(htmlUrl, htmlStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get images info from HTML: %v", err)

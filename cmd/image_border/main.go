@@ -35,7 +35,8 @@ import (
 func main() {
 
 	// 1. 定义要读取的目录路径
-	directoryPath := "D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/"
+	// directoryPath := "D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/"
+	directoryPath := "D:/work/wechat_download_data/html/test5/test5_1/"
 
 	// 新建文件前缀
 	newFilePrefix := "update_"
@@ -127,7 +128,6 @@ func main() {
 	} else {
 		fmt.Println("======================== filteredImgsJsonFile done")
 	}
-	panic("============ STOP")
 
 	fmt.Printf("\n\n==================\n\n fileCount: %d\n successFileCount: %d\n failedFileCount: %d\n skippedFileCount: %d\n\n ==================\n\n", fileCount, successFileCount, failedFileCount, skippedFileCount)
 }
@@ -135,10 +135,16 @@ func main() {
 // 获取HTML中的图片信息imgsInfo和需要被过滤的图片filteredImgs
 func addImageInfoOverlayToHTML(htmlStr string, imgsInfo []map[string]interface{}, filteredImgs map[string]map[string]interface{}, dataSrcRepeat []string) string {
 
+	fmt.Printf("\n========================= imgsInfo ==========================\n\n %#v\n", imgsInfo)
+	fmt.Printf("\n========================= filteredImgs ==========================\n\n %#v\n", filteredImgs)
+
 	newHtmlStr := htmlStr
 	// 用正则表达式在HTML字符串中查找img标签
-	imgRegex, _ := regexp.Compile(`<img.*?src=["|'](.*?)["|'].*?>`)
-	imgTags := imgRegex.FindAllString(htmlStr, -1)
+	imgTags, err := utils.GetImgTagsFromHTML(htmlStr)
+	if err != nil {
+		fmt.Printf("failed to compile imgRegex: %v", err)
+		return newHtmlStr
+	}
 
 	for _, imgTag := range imgTags {
 
