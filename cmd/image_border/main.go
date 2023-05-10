@@ -287,9 +287,10 @@ func writefilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{},
 
 				htmlUrl := imgInfo["htmlUrl"].(string)
 
-				// 读取htmlUrl文件名，给文件名增加前缀newFilePrefix
-				htmlUrl = strings.Replace(htmlUrl, ".html", "", -1)
-				htmlUrl = newFilePrefix + htmlUrl + ".html"
+				// 读取htmlUrl是一个url地址，读取后面的文件名，给文件名增加前缀newFilePrefix
+				fileName := filepath.Base(htmlUrl)
+				newFileName := newFilePrefix + fileName
+				htmlUrl = strings.Replace(htmlUrl, fileName, newFileName, -1)
 				htmlStr += fmt.Sprintf("<a href=\"%s\" target=\"_blank\"> <img src=\"%s\" style=\"width: auto; height: auto; max-width: 100%%; max-height: 100%%; margin: 5px; object-fit: contain; border: 1px solid blue;\"></a>", htmlUrl, imgSrc)
 			}
 		}
