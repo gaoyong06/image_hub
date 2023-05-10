@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-24 11:15:14
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-26 14:20:50
+ * @LastEditTime: 2023-05-10 16:07:18
  * @FilePath: \image_hub\model\article.go
  * @Description: 公众号文章信息
  */

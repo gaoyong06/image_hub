@@ -11,7 +11,7 @@ package model
 // Section 即一篇公众号文章内的一个分段
 // 一个分段是：标题(或 段落)文字 + 下方的图片列表
 type Section struct {
-	SectionId int      `json:"section_id"`                        // 分段id
+	Idx       int      `json:"idx"`                               // 分段索引
 	Text      string   `json:"text"`                              // 分段内文字内容
 	ImageUrls []string `gorm:"serializer:json" json:"image_urls"` // 分段内图片url列表
 }

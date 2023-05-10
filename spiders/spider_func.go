@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-05-08 16:10:39
+ * @LastEditTime: 2023-05-10 16:14:13
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -116,6 +116,7 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 		return nil, err
 	}
 
+	sectionIdx := 0
 	var sections []model.Section
 
 	// 获取不符合规则(不是头像，背景图，壁纸，表情包规范)的图片
@@ -217,7 +218,10 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 
 			// 将图片url添加到当前Section的ImageUrls列表
 			if len(sections) <= 0 {
+
+				sectionIdx++
 				sections = append(sections, model.Section{
+					Idx:       sectionIdx,
 					Text:      "",
 					ImageUrls: []string{},
 				})
@@ -236,7 +240,9 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 			currentText := strings.TrimSpace(n.Data)
 
 			// 创建一个新的Section，并添加到数组中
+			sectionIdx++
 			newSection := model.Section{
+				Idx:       sectionIdx,
 				Text:      currentText,
 				ImageUrls: []string{},
 			}
