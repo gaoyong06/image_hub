@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-05-10 16:14:13
+ * @LastEditTime: 2023-07-28 18:45:32
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"image"
 	"image_hub/model"
+	"image_hub/pkg/helper"
 	"image_hub/pkg/utils"
 	"io/ioutil"
 	"math"
@@ -229,6 +230,7 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 
 			// imageUrl不为空则追加到ImageUrls中
 			if len(imageUrl) > 0 {
+				imageUrl := helper.GetFmtLocalPath(imageUrl)
 				currentSection := sections[len(sections)-1]
 				currentSection.ImageUrls = append(currentSection.ImageUrls, imageUrl)
 				sections[len(sections)-1] = currentSection
