@@ -23,6 +23,7 @@ import (
 	"image_hub/pkg/utils"
 	"image_hub/spiders"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -37,6 +38,9 @@ func main() {
 	// 1. 定义要读取的目录路径
 	// directoryPath := "D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/"
 	directoryPath := "D:/work/wechat_download_data/html/test5/test5_1/"
+
+	// 存放新生成文件的子目录名称
+	newSubDir := "update/"
 
 	// 新建文件前缀
 	newFilePrefix := "update_"
@@ -64,6 +68,8 @@ func main() {
 	successFileCount := 0
 	failedFileCount := 0
 	skippedFileCount := 0
+
+	newDirectoryPath := directoryPath + newSubDir
 
 	// 1. 遍历目录中的所有文件，除了以"update_"开头的文件
 	for _, file := range files {
@@ -108,8 +114,17 @@ func main() {
 		// 4. 在html中添加浮层显示图片信息
 		newHtmlStr := addImageInfoOverlayToHTML(htmlStr, imgsInfo, filteredImgs, dataSrcRepeat)
 
-		// 5. 把新的html字符串写入一个新文件，新文件的文件名使用: update_{原来该html文件名}
-		newFilePath := filepath.Join(directoryPath, fmt.Sprintf("update_%s", file.Name()))
+		// 5. 检查xxx/update/目录是否存在，不存在则创建
+		if _, err := os.Stat(newDirectoryPath); os.IsNotExist(err) {
+			err = os.MkdirAll(newDirectoryPath, 0755)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+
+		// 6. 把新的html字符串写入一个新文件，新文件的文件名使用: update_{原来该html文件名}
+		newFilePath := filepath.Join(newDirectoryPath, fmt.Sprintf("update_%s", file.Name()))
 		err = ioutil.WriteFile(newFilePath, []byte(newHtmlStr), 0644)
 		if err != nil {
 			fmt.Println(err)
@@ -122,7 +137,7 @@ func main() {
 	}
 
 	// 将被需要被过滤的文件写入日志文件
-	err = writeFilteredImgsToJsonFile(allFilteredImgs, dataSrcRepeat, newFilePrefix, directoryPath, filteredImgsJsonFileName, filteredImgsJsonHTMLName)
+	err = writeFilteredImgsToJsonFile(allFilteredImgs, dataSrcRepeat, newFilePrefix, newDirectoryPath, newSubDir, filteredImgsJsonFileName, filteredImgsJsonHTMLName)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -258,7 +273,7 @@ func convert2KB(size float64) string {
 }
 
 // 将当前目录下被过滤掉的图片写入日志文件
-func writeFilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{}, dataSrcRepeat []string, newFilePrefix, directoryPath, jsonFileName, htmlFileName string) error {
+func writeFilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{}, dataSrcRepeat []string, newFilePrefix, directoryPath, newSubDir, jsonFileName, htmlFileName string) error {
 
 	if directoryPath == "" || jsonFileName == "" || htmlFileName == "" {
 		return errors.New("directoryPath, jsonFileName, htmlFileName is required")
@@ -295,7 +310,7 @@ func writeFilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{},
 
 				// 读取htmlUrl是一个url地址，读取后面的文件名，给文件名增加前缀newFilePrefix
 				fileName := filepath.Base(htmlUrl)
-				newFileName := newFilePrefix + fileName
+				newFileName := newSubDir + newFilePrefix + fileName
 				htmlUrl = strings.Replace(htmlUrl, fileName, newFileName, -1)
 				htmlStr += fmt.Sprintf("<a href=\"%s\" target=\"_blank\"> <img src=\"%s\" style=\"width: auto; height: auto; max-width: 100%%; max-height: 100%%; margin: 5px; object-fit: contain; border: 1px solid blue;\"></a>", htmlUrl, imgSrc)
 			}
