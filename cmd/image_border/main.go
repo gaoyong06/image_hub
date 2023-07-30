@@ -122,7 +122,7 @@ func main() {
 	}
 
 	// 将被需要被过滤的文件写入日志文件
-	err = writefilteredImgsToJsonFile(allFilteredImgs, dataSrcRepeat, newFilePrefix, directoryPath, filteredImgsJsonFileName, filteredImgsJsonHTMLName)
+	err = writeFilteredImgsToJsonFile(allFilteredImgs, dataSrcRepeat, newFilePrefix, directoryPath, filteredImgsJsonFileName, filteredImgsJsonHTMLName)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -258,7 +258,7 @@ func convert2KB(size float64) string {
 }
 
 // 将当前目录下被过滤掉的图片写入日志文件
-func writefilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{}, dataSrcRepeat []string, newFilePrefix, directoryPath, jsonFileName, htmlFileName string) error {
+func writeFilteredImgsToJsonFile(filteredImgs map[string]map[string]interface{}, dataSrcRepeat []string, newFilePrefix, directoryPath, jsonFileName, htmlFileName string) error {
 
 	if directoryPath == "" || jsonFileName == "" || htmlFileName == "" {
 		return errors.New("directoryPath, jsonFileName, htmlFileName is required")
