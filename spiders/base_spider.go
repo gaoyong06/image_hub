@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-02 17:31:53
+ * @LastEditTime: 2023-08-02 21:21:46
  * @FilePath: \image_hub\spiders\base_spider.go
  * @Description: 公众号页面基础爬虫结构体
  */
@@ -51,6 +51,8 @@ var (
 		"你们要的",
 		"\u200d\u200d",
 		"转自",
+		"长按保存",
+		"点击上方“蓝字”关注我",
 
 		// 情侣头像原创榜
 		"情侣头像原创榜",

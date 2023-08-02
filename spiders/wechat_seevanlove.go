@@ -16,7 +16,7 @@ import (
 
 // 微信号：touxiangshe, 文章索引: 1 的自定义处理函数
 // 头像内容处理
-func seevanlove1(sections []model.Section) []model.Section {
+func seevanlove_1(sections []model.Section) []model.Section {
 
 	// Filter out sections with invalid text
 	sections = filterDirtyText(sections)

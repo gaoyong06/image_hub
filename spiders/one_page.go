@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-02 17:32:49
+ * @LastEditTime: 2023-08-02 17:59:35
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -101,7 +101,7 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]int
 	// 调用每个微信号及其内容索引的自定义方法
 	fileIdx := getFileName(url)
 	if len(wechatId) > 0 {
-		funcKey := fmt.Sprintf("%s%s", wechatId, fileIdx)
+		funcKey := fmt.Sprintf("%s_%s", wechatId, fileIdx)
 		sections = runFunc(funcKey, sections)
 	}
 

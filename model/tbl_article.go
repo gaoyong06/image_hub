@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-24 11:15:14
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-05-10 16:07:18
+ * @LastEditTime: 2023-08-02 17:49:06
  * @FilePath: \image_hub\model\article.go
  * @Description: 公众号文章信息
  */
@@ -33,7 +33,7 @@ func GetTblArticle() *TblArticle {
 }
 
 func (t *TblArticle) TableName() string {
-	return "tbl_article"
+	return "tbl_article_gh_8c96baecf453"
 }
 
 // https://gorm.io/zh_CN/docs/advanced_query.html

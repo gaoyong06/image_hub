@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-02 15:29:29
+ * @LastEditTime: 2023-08-02 18:00:54
  * @FilePath: \image_hub\spiders\wechat_touxiangshe.go
  * @Description: 微信号自定义处理函数-头像社
  */
@@ -15,7 +15,7 @@ import (
 
 // 微信号：touxiangshe, 文章索引: 1 的自定义处理函数
 // 头像内容处理
-func touxiangshe1(sections []model.Section) []model.Section {
+func touxiangshe_1(sections []model.Section) []model.Section {
 
 	// 过滤字符串
 	sections = filterDirtyText(sections)
@@ -39,7 +39,7 @@ func touxiangshe1(sections []model.Section) []model.Section {
 
 // 微信号：touxiangshe, 文章索引: 2 的自定义处理函数
 // 背景图内容处理
-func touxiangshe2(sections []model.Section) []model.Section {
+func touxiangshe_2(sections []model.Section) []model.Section {
 
 	// 过滤字符串
 	sections = filterDirtyText(sections)
@@ -64,7 +64,7 @@ func touxiangshe2(sections []model.Section) []model.Section {
 
 // 微信号：touxiangshe, 文章索引: 3 的自定义处理函数
 // 壁纸内容处理
-func touxiangshe3(sections []model.Section) []model.Section {
+func touxiangshe_3(sections []model.Section) []model.Section {
 
 	// 过滤字符串
 	sections = filterDirtyText(sections)
@@ -80,7 +80,7 @@ func touxiangshe3(sections []model.Section) []model.Section {
 
 // 微信号：touxiangshe, 文章索引: 4 的自定义处理函数
 // 表情包内容处理
-func touxiangshe4(sections []model.Section) []model.Section {
+func touxiangshe_4(sections []model.Section) []model.Section {
 
 	// 过滤字符串
 	sections = filterDirtyText(sections)

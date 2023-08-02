@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-07-28 18:45:32
+ * @LastEditTime: 2023-08-02 22:43:04
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -122,16 +122,21 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 
 	// 获取不符合规则(不是头像，背景图，壁纸，表情包规范)的图片
 	var filteredImgSrcs []string
-	_, filteredImgs, err := InferImageTypeFromHTML(htmlUrl, htmlStr)
-	if err != nil {
-		return nil, err
-	}
+	var filteredImgs map[string]map[string]interface{}
 
-	if len(filteredImgs) > 0 {
-		for _, filteredImg := range filteredImgs {
-			filteredImgSrcs = append(filteredImgSrcs, filteredImg["src"].(string))
-		}
-	}
+	// 下面这个判断,误差太大,暂时注释掉
+	// _, filteredImgs, err = InferImageTypeFromHTML(htmlUrl, htmlStr)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if len(filteredImgs) > 0 {
+	// 	for _, filteredImg := range filteredImgs {
+	// 		filteredImgSrcs = append(filteredImgSrcs, filteredImg["src"].(string))
+	// 	}
+	// }
+
+	imageTypes := GetHtmlImageTypes(htmlStr)
 
 	// 字符串过滤器，过滤掉不需要的标签，包括空的 span、不可见文本元素等, #activity-name，#meta_content，#js_tags 三个标签的过滤
 	filter := func(n *html.Node) bool {
@@ -183,6 +188,13 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 			// 如果同一个图片在多个网页中重复出现，则可能是宣传图，过滤掉
 			if utils.Contains(dataSrcRepeat, dataSrc) {
 				fmt.Printf("========================= dataSrcRepeat. src: %s\n", src)
+				return true
+			}
+
+			// 如果不是表情包, 则过滤掉所有gif图
+			fmt.Printf("========================= imageTypes: %v, dataSrc:%s \n", imageTypes, src)
+			if len(imageTypes) > 0 && !utils.Contains(imageTypes, "sticker") && strings.HasSuffix(src, "gif") {
+				fmt.Printf("========================= not sticker. src: %s\n", src)
 				return true
 			}
 

@@ -33,8 +33,11 @@ var (
 	defaultConfigFile = "conf/config.yaml"
 
 	// Define the directory to traverse
-	dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
-	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-12-37"
+	// 头像社
+	// dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
+
+	// 头像有点好看
+	dir = "D:/work/wechat_download_data/html/Dump-0422-20-45-37"
 )
 
 func main() {
