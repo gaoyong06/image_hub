@@ -36,8 +36,8 @@ import (
 func main() {
 
 	// 1. 定义要读取的目录路径
-	// directoryPath := "D:/work/wechat_download_data/html/test5/Dump-0422-20-12-37/"
-	directoryPath := "D:/work/wechat_download_data/html/test5/test5_1/"
+	// 示例: directoryPath := "D:/work/wechat_download_data/html/test5/test5_1/"
+	directoryPath := "D:/work/wechat_download_data/html/Dump-0422-20-12-37/"
 
 	// 存放新生成文件的子目录名称
 	newSubDir := "update/"

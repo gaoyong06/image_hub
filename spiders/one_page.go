@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-05-05 10:01:07
+ * @LastEditTime: 2023-08-02 17:32:49
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -69,13 +69,19 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]int
 	selector := "h1#activity-name"
 	title := e.ChildText(selector)
 
+	// 微信名
+	selector = "#js_account_nickname"
+	jsAccountNickname := e.ChildText(selector)
+
 	// 微信号
 	var wechatId string
 	selector = ".profile_meta_value"
 	profileMetaValues := e.ChildTexts(selector)
 
 	if len(profileMetaValues) == 0 {
-		panic(fmt.Sprintf("html class .profile_meta_value element is empty. title: %s, url: %s", title, url))
+
+		wechatId = nicknameWechatIdMap[jsAccountNickname]
+		fmt.Printf("html class .profile_meta_value element is empty. title: %s, url: %s", title, url)
 	} else {
 		wechatId = profileMetaValues[0]
 	}
@@ -94,8 +100,10 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]int
 
 	// 调用每个微信号及其内容索引的自定义方法
 	fileIdx := getFileName(url)
-	funcKey := fmt.Sprintf("%s%s", wechatId, fileIdx)
-	sections = runFunc(funcKey, sections)
+	if len(wechatId) > 0 {
+		funcKey := fmt.Sprintf("%s%s", wechatId, fileIdx)
+		sections = runFunc(funcKey, sections)
+	}
 
 	// 将sections以json格式打印出来
 	sectionsJson, err := json.Marshal(sections)

@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-04-28 17:33:09
+ * @LastEditTime: 2023-08-02 17:31:53
  * @FilePath: \image_hub\spiders\base_spider.go
  * @Description: 公众号页面基础爬虫结构体
  */
@@ -54,6 +54,13 @@ var (
 
 		// 情侣头像原创榜
 		"情侣头像原创榜",
+	}
+
+	// 微信名和微信号的Map
+	nicknameWechatIdMap = map[string]string{
+		"头像社":     "touxiangshe",
+		"情侣头像原创榜": "seevanlove",
+		"头像有点好看":  "gh_8c96baecf453",
 	}
 )
 

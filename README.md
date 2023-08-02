@@ -9,6 +9,20 @@
 
 imageHub,是一个图片内容源服务，主要服务 content_service 的内容源采集 现在的目标是采集,主流的微信公众号,主流的图片网站内容
 
+
+#### 工作原理
+1. 读取directoryPath所有html的文件将各个文件中的img标签的data-src内的值取出来如果重复出现(出现次数大于1),则记录到变量params["dataSrcRepeat"]中
+2. html文件名规则为："%Y%m%d_%H%M%S"_"序号.html", 例如: 20230109_111900_1.html
+3. 新建一个colly queue队列
+4. 读取html的内容, 判断该html内的图片类型(头像，壁纸，背景图，表情包)是头像,背景,套图,壁纸,表情 哪一种
+5. 新建一个onePageSpider设置params["path"]和params["dataSrcRepeat"],添加到上述colly queue处理队列中
+6. 队列的c.OnHTML中使用onePageSpider.Process 处理队列中的各个任务
+7. 调用one_page.go中的ParseData方法将html字符串解析到Article结构体
+8. 在func_map.go中定义了各个微信号的自定义处理函数，调用wechat_微信号.go(如：wechat_touxiangshe.go) 对特殊的微信公众号的的sections过解析处理
+9. 通过onePageSpider.Process调用base_spider.go中的Process方法将上述解析到的Article和sections保存到db,支持重复覆盖方式写入
+
+
+
 内容包括：
 
 1. 头像
