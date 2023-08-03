@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-03 10:35:51
+ * @LastEditTime: 2023-08-03 17:41:51
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 微信号自定义处理函数map, key: 微信号+文章索引号, val：自定义处理函数
  */
@@ -13,7 +13,7 @@ import (
 	"image_hub/model"
 )
 
-var funcMap = make(map[string]func(sections []model.Section) []model.Section)
+var funcMap = make(map[string]func(article *model.TblArticle, sections []model.Section) []model.Section)
 
 func init() {
 
@@ -36,19 +36,25 @@ func init() {
 	addFunc("gh_22c17e1db325_3", gh_22c17e1db325)
 	addFunc("gh_22c17e1db325_4", gh_22c17e1db325)
 
+	// 头像库
+	addFunc("touxiangcool_1", touxiangcool)
+	addFunc("touxiangcool_2", touxiangcool)
+	addFunc("touxiangcool_3", touxiangcool)
+	addFunc("touxiangcool_4", touxiangcool_4)
+
 }
 
 // AddFunc adds a custom function to the funcMap
-func addFunc(key string, val func(sections []model.Section) []model.Section) {
+func addFunc(key string, val func(article *model.TblArticle, sections []model.Section) []model.Section) {
 	funcMap[key] = val
 }
 
 // RunFunc runs the custom function associated with the given name
-func runFunc(key string, sections []model.Section) []model.Section {
+func runFunc(key string, article *model.TblArticle, sections []model.Section) []model.Section {
 
 	val, ok := funcMap[key]
 	if ok {
-		sections = val(sections)
+		sections = val(article, sections)
 	}
 
 	return sections

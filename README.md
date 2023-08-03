@@ -12,17 +12,36 @@ imageHub,是一个图片内容源服务，主要服务 content_service 的内容
 
 #### 工作原理
 1. 读取directoryPath所有html的文件将各个文件中的img标签的data-src内的值取出来如果重复出现(出现次数大于1),则记录到变量params["dataSrcRepeat"]中
+
 2. html文件名规则为："%Y%m%d_%H%M%S"_"序号.html", 例如: 20230109_111900_1.html
+
 3. 新建一个colly queue队列
+
 4. 读取html的内容, 判断该html内的图片类型(头像，壁纸，背景图，表情包)是头像,背景,套图,壁纸,表情 哪一种
+
 5. 新建一个onePageSpider设置params["path"]和params["dataSrcRepeat"],添加到上述colly queue处理队列中
+
 6. 队列的c.OnHTML中使用onePageSpider.Process 处理队列中的各个任务
+
 7. 调用one_page.go中的ParseData方法将html字符串解析到Article结构体
+
 8. 在func_map.go中定义了各个微信号的自定义处理函数，调用wechat_微信号.go(如：wechat_touxiangshe.go) 对特殊的微信公众号的的sections过解析处理
+
 9. 通过onePageSpider.Process调用base_spider.go中的Process方法将上述解析到的Article和sections保存到db,支持重复覆盖方式写入
 
 
-CREATE TABLE `tbl_article_gh_8c96baecf453`  (
+#### 新公众号内容导入步骤
+1. 查看工作号"微信号", 假设微信号为:abc
+
+2. 在image_hub/cmd/image_hub/main.go中修改需要被处理的html文档目录
+
+```
+ dir = "D:/work/wechat_download_data/html/Dump-0423-11-39-39"
+```
+
+3. 在image_hub库中创建文章表,表名为:tbl_article_微信号, 即: tbl_article_abc
+```
+CREATE TABLE `tbl_article_abc`  (
   `sn` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '一篇文章的唯一标识符',
   `mid` bigint(20) UNSIGNED NOT NULL DEFAULT 0 COMMENT '每次推送文章的唯一标识符',
   `idx` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '如果一次推送有多篇文章，idx表示当前页面是第几个',
@@ -38,6 +57,28 @@ CREATE TABLE `tbl_article_gh_8c96baecf453`  (
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '删除时间',
   PRIMARY KEY (`sn`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '文章表' ROW_FORMAT = DYNAMIC;
+```
+
+4. 修改image_hub/model/article.go 中表名为tbl_article_abc
+```
+func (t *TblArticle) TableName() string {
+	return "tbl_article_abc"
+}
+```
+5. 在image_hub/spiders/func_map.go中按文章索引号增加自定义数据处理方法的map
+
+```
+  // 示例
+	addFunc("abc_1", abc)
+```
+
+6. 在image_hub/spiders 下增加文字自定义处理方法,即4中map中的方法,文件名格式为: wechat_微信号.go, 即: image_hub/spiders/wechat_adc.go
+
+7. 在image_hub/cmd/image_hub目录下，执行命令后,在 tbl_article_abc表中查看分析结果
+```
+ go run main.go -c ../../configs/config.yaml
+```
+
 
 
 内容包括：

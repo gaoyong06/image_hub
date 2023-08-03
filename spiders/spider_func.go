@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-03 10:49:07
+ * @LastEditTime: 2023-08-03 18:06:36
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -23,6 +23,8 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/PuerkitoBio/goquery"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
@@ -89,33 +91,53 @@ func IsAd(htmlStr string) bool {
 }
 
 // 根据公众号标题和标签,确定公众号文章内图片类型
-func GetHtmlImageTypes(htmlStr string) []string {
+func GetHtmlImageTypes(htmlStr string) ([]string, error) {
 
+	// fmt.Printf("htmlStr: %+v\n", htmlStr)
 	// 判断文章内的图片类型都有哪些
-
 	var imageTypes []string
 
-	if strings.Contains(htmlStr, "头像") {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlStr))
+	if err != nil {
+		return imageTypes, nil
+	}
+
+	// 页面标题
+	title := doc.Find("#activity-name").Text()
+	fmt.Printf("title: %s\n", title)
+
+	// 页面内标签
+	var tags []string
+	doc.Find(".article-tag__item").Each(func(_ int, s *goquery.Selection) {
+		tag := s.Text()
+		tags = append(tags, tag)
+	})
+	fmt.Printf("tags: %+v\n", tags)
+
+	text := title + "," + strings.Join(tags, ",")
+	text = strings.ToLower(text)
+
+	if strings.Contains(text, "头像") {
 		imageTypes = append(imageTypes, "avatar")
 	}
 
-	if strings.Contains(htmlStr, "背景") {
-		imageTypes = append(imageTypes, "background", "wallpaper")
+	if strings.Contains(text, "背景") {
+		imageTypes = append(imageTypes, "background")
 	}
 
-	if strings.Contains(htmlStr, "套图") {
+	if strings.Contains(text, "套图") {
 		imageTypes = append(imageTypes, "avatar", "background")
 	}
 
-	if strings.Contains(htmlStr, "壁纸") {
+	if strings.Contains(text, "壁纸") || strings.Contains(text, "wallpaper") {
 		imageTypes = append(imageTypes, "wallpaper")
 	}
 
-	if strings.Contains(htmlStr, "表情") {
+	if strings.Contains(text, "表情包") {
 		imageTypes = append(imageTypes, "sticker")
 	}
 
-	return imageTypes
+	return imageTypes, nil
 }
 
 // 从HTML字符串中解析出Section数组，包含文字和图片
@@ -148,7 +170,7 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 	// 	}
 	// }
 
-	imageTypes := GetHtmlImageTypes(htmlStr)
+	imageTypes, _ := GetHtmlImageTypes(htmlStr)
 
 	// 字符串过滤器，过滤掉不需要的标签，包括空的 span、不可见文本元素等, #activity-name，#meta_content，#js_tags 三个标签的过滤
 	filter := func(n *html.Node) bool {

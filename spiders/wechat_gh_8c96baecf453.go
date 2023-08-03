@@ -16,7 +16,7 @@ import (
 
 // 微信号：gh_8c96baecf453, 文章索引: 1 的自定义处理函数
 // 头像内容处理
-func gh_8c96baecf453(sections []model.Section) []model.Section {
+func gh_8c96baecf453(_ *model.TblArticle, sections []model.Section) []model.Section {
 
 	// Filter out sections with invalid text
 	sections = filterDirtyText(sections)

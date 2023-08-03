@@ -40,7 +40,10 @@ var (
 	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-45-37"
 
 	// 头像即新欢
-	dir = "D:/work/wechat_download_data/html/Dump-0422-20-54-12"
+	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-54-12"
+
+	// 头像库
+	dir = "D:/work/wechat_download_data/html/Dump-0423-11-39-39"
 )
 
 func main() {
@@ -221,7 +224,9 @@ func Run() {
 		htmlStr := string(htmlBytes)
 
 		// html内的图片类型(头像，壁纸，背景图，表情包)
-		imageTypes := spiders.GetHtmlImageTypes(htmlStr)
+		imageTypes, _ := spiders.GetHtmlImageTypes(htmlStr)
+		fmt.Printf("imageTypes: %+v\n", imageTypes)
+
 		if len(imageTypes) > 0 {
 			spider = onePageSpider
 		} else {

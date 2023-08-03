@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-03 12:04:23
+ * @LastEditTime: 2023-08-03 17:15:33
  * @FilePath: \image_hub\spiders\wechat_gh_22c17e1db325.go
  * @Description: 微信号自定义处理函数-头像即新欢
  */
@@ -17,7 +17,7 @@ import (
 
 // gh_22c17e1db325, 文章索引: 1,2,3,4 的自定义处理函数
 // 头像,壁纸,背景图, 广告内容处理
-func gh_22c17e1db325(sections []model.Section) []model.Section {
+func gh_22c17e1db325(_ *model.TblArticle, sections []model.Section) []model.Section {
 
 	// Filter out sections with invalid text
 	sections = filterDirtyText(sections)

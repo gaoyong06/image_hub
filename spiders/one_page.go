@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-02 17:59:35
+ * @LastEditTime: 2023-08-03 17:14:41
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -102,7 +102,7 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]int
 	fileIdx := getFileName(url)
 	if len(wechatId) > 0 {
 		funcKey := fmt.Sprintf("%s_%s", wechatId, fileIdx)
-		sections = runFunc(funcKey, sections)
+		sections = runFunc(funcKey, article, sections)
 	}
 
 	// 将sections以json格式打印出来
