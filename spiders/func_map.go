@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-02 22:13:31
+ * @LastEditTime: 2023-08-03 10:35:51
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 微信号自定义处理函数map, key: 微信号+文章索引号, val：自定义处理函数
  */
@@ -26,9 +26,15 @@ func init() {
 	// 情侣头像原创榜
 	addFunc("seevanlove_1", seevanlove_1)
 
-	//
+	// 头像有点好看
 	addFunc("gh_8c96baecf453_1", gh_8c96baecf453)
 	addFunc("gh_8c96baecf453_2", gh_8c96baecf453)
+
+	// 头像即新欢
+	addFunc("gh_22c17e1db325_1", gh_22c17e1db325)
+	addFunc("gh_22c17e1db325_2", gh_22c17e1db325)
+	addFunc("gh_22c17e1db325_3", gh_22c17e1db325)
+	addFunc("gh_22c17e1db325_4", gh_22c17e1db325)
 
 }
 

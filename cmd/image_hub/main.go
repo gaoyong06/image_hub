@@ -37,7 +37,10 @@ var (
 	// dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
 
 	// 头像有点好看
-	dir = "D:/work/wechat_download_data/html/Dump-0422-20-45-37"
+	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-45-37"
+
+	// 头像即新欢
+	dir = "D:/work/wechat_download_data/html/Dump-0422-20-54-12"
 )
 
 func main() {
@@ -224,6 +227,12 @@ func Run() {
 		} else {
 			log.Warnf("no matching spider found for file %s", d.Name())
 			fmt.Printf("==== no matching spider found for file %s", d.Name())
+			return nil
+		}
+
+		isAd := spiders.IsAd(htmlStr)
+		if isAd {
+			log.Warnf("is ad file: %s", d.Name())
 			return nil
 		}
 

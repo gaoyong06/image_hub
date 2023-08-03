@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-02 22:43:04
+ * @LastEditTime: 2023-08-03 10:49:07
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -75,6 +75,18 @@ var (
 		"sticker":    {"min": 0.15, "max": 1.14},
 	}
 )
+
+// 判断内容是否是广告
+func IsAd(htmlStr string) bool {
+
+	for _, keyword := range adKeywords {
+		if strings.Contains(htmlStr, keyword) {
+			return true
+		}
+	}
+
+	return false
+}
 
 // 根据公众号标题和标签,确定公众号文章内图片类型
 func GetHtmlImageTypes(htmlStr string) []string {

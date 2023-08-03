@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-02 22:13:12
+ * @LastEditTime: 2023-08-03 09:19:21
  * @FilePath: \image_hub\spiders\wechat_gh_8c96baecf453.go
  * @Description: 微信号自定义处理函数-头像有点好看
  */
@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-// 微信号：touxiangshe, 文章索引: 1 的自定义处理函数
+// 微信号：gh_8c96baecf453, 文章索引: 1 的自定义处理函数
 // 头像内容处理
 func gh_8c96baecf453(sections []model.Section) []model.Section {
 
