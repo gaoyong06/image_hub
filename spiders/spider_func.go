@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-03 18:06:36
+ * @LastEditTime: 2023-08-04 23:09:42
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -121,7 +121,7 @@ func GetHtmlImageTypes(htmlStr string) ([]string, error) {
 		imageTypes = append(imageTypes, "avatar")
 	}
 
-	if strings.Contains(text, "背景") {
+	if strings.Contains(text, "背景") || strings.Contains(text, "封面") {
 		imageTypes = append(imageTypes, "background")
 	}
 
@@ -226,15 +226,15 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 			}
 
 			// 如果不是表情包, 则过滤掉所有gif图
-			fmt.Printf("========================= imageTypes: %v, dataSrc:%s \n", imageTypes, src)
+			fmt.Printf("imageTypes: %v, dataSrc:%s \n", imageTypes, src)
 			if len(imageTypes) > 0 && !utils.Contains(imageTypes, "sticker") && strings.HasSuffix(src, "gif") {
-				fmt.Printf("========================= not sticker. src: %s\n", src)
+				fmt.Printf("not sticker. src: %s\n", src)
 				return true
 			}
 
 			if utils.Contains(filteredImgSrcs, src) {
 
-				fmt.Printf("========================= filteredImgSrcs. src: %s\n", src)
+				fmt.Printf("filteredImgSrcs. src: %s\n", src)
 
 				filteredImgsJSON, _ := json.Marshal(filteredImgs)
 				fmt.Printf("\n\n=============== filteredImgsJSON =================\n\n : %s\n\n", filteredImgsJSON)
@@ -472,6 +472,10 @@ func InferImageTypeFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, 
 // 读取directoryPath所有html的文件将各个文件中的img标签的data-src内的值取出来如果重复出现(出现次数大于1),则记录下来返回
 func GetImageDataSrcRepeat(directoryPath string) ([]string, error) {
 
+	if !strings.HasSuffix(directoryPath, "/") {
+		directoryPath = directoryPath + "/"
+	}
+
 	// 检查directoryPath是否是目录
 	info, err := os.Stat(directoryPath)
 	if err != nil {
@@ -549,6 +553,7 @@ func GetImageDataSrcRepeat(directoryPath string) ([]string, error) {
 		}
 	}
 
+	fmt.Println("=========== GetImageDataSrcRepeat STOP ===============")
 	return dataSrcRepeat, nil
 }
 
@@ -605,4 +610,72 @@ func filterEmptyImageUrls(sections []model.Section) []model.Section {
 	}
 
 	return filteredSections
+}
+
+// 如果section的image_urls内只有一个图片的话,则删掉
+func filterOnlyOneImageUrls(sections []model.Section) []model.Section {
+
+	for i := 0; i < len(sections); i++ {
+		if len(sections[i].ImageUrls) == 1 {
+			sections = append(sections[:i], sections[i+1:]...)
+			// compensate for the removed element by decrementing the index
+			i--
+		}
+	}
+	return sections
+}
+
+// 文本去除空格
+func replaceTextBlank(sections []model.Section) []model.Section {
+
+	for i := 0; i < len(sections); i++ {
+		sections[i].Text = strings.Replace(sections[i].Text, " ", "", -1)
+	}
+	return sections
+}
+
+// 合并sections中的section.ImageUrls
+// 如果sections内image_urls都只有两个图片,将每4个sections内的item合并成一个, 删掉被合并的item， 合并后sections内item的image_urls都是8张图片,最后一个可能会小于8张图
+func mergeImageUrls(sections []model.Section) []model.Section {
+
+	// 是否所有的section内都只有两张图片
+	allTwoImages := true
+	for i := 0; i < len(sections); i++ {
+		if allTwoImages && len(sections[i].ImageUrls) > 2 {
+			allTwoImages = false
+		}
+	}
+
+	// 如果sections内image_urls都只有两个图片,将每4个sections内的item合并成一个, 删掉被合并的item
+	if allTwoImages {
+		// 计算需要添加的额外item数量
+		extraItems := 4 - (len(sections) % 4)
+
+		// 添加额外的空item
+		for i := 0; i < extraItems; i++ {
+			sections = append(sections, model.Section{
+				ImageUrls: []string{},
+			})
+		}
+
+		// 创建新的sections数组来保存合并后的结果
+		mergedSections := []model.Section{}
+
+		// 合并每4个sections内的item
+		for i := 0; i < len(sections); i += 4 {
+			imageUrls := sections[i].ImageUrls
+			imageUrls = append(imageUrls, sections[i+1].ImageUrls...)
+			imageUrls = append(imageUrls, sections[i+2].ImageUrls...)
+			imageUrls = append(imageUrls, sections[i+3].ImageUrls...)
+			sections[i].ImageUrls = imageUrls
+
+			// 将合并后的item添加到新的mergedSections数组中
+			mergedSections = append(mergedSections, sections[i])
+		}
+
+		// 更新sections为合并后的结果
+		sections = mergedSections
+	}
+
+	return sections
 }

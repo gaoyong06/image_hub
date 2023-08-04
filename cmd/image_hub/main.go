@@ -32,18 +32,55 @@ var (
 	configFile        string
 	defaultConfigFile = "conf/config.yaml"
 
+	// 注意: dir必须以/结尾
 	// Define the directory to traverse
 	// 头像社
-	// dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39"
+	// dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39/"
 
 	// 头像有点好看
-	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-45-37"
+	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-45-37/"
 
 	// 头像即新欢
-	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-54-12"
+	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-54-12/"
 
 	// 头像库
-	dir = "D:/work/wechat_download_data/html/Dump-0423-11-39-39"
+	// dir = "D:/work/wechat_download_data/html/Dump-0423-11-39-39/"
+
+	// 头像文案
+	// dir = "D:/work/wechat_download_data/html/Dump-0423-12-06-34/"
+
+	// 你的小众头像
+	// dir = "D:/work/wechat_download_data/html/Dump-0423-19-16-40/"
+
+	// 换头像bo
+	// dir = "D:/work/wechat_download_data/html/Dump-0423-19-23-35/1/"
+
+	// 每日新头像
+	// dir = "D:/work/wechat_download_data/html/Dump-0423-19-29-57/"
+
+	// 要啥头像
+	// dir = "D:/work/wechat_download_data/html/Dump-0423-20-51-56/"
+
+	// 琉柒头像
+	// dir = "D:/work/wechat_download_data/html/Dump-0425-08-34-41/"
+
+	// 头像娣
+	dir = "D:/work/wechat_download_data/html/Dump-0425-08-48-50/"
+
+	// 女生头像壁纸控
+	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-08-48/"
+
+	// 精选女生头像
+	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-02-16/"
+
+	// 头像先生
+	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-28-30/"
+
+	// 头像味
+	// dir = "D:/work/wechat_download_data/html/Dump-0425-10-08-29/"
+
+	// 小怪兽头像
+	// dir = "D:/work/wechat_download_data/html/Dump-0425-10-14-07/"
 )
 
 func main() {
@@ -90,6 +127,7 @@ func Run() {
 	params := make(map[string]interface{})
 	// 计算目录下的html内的img标签重复的data-src
 	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir)
+	fmt.Printf("dataSrcRepeat: %+v\n", dataSrcRepeat)
 	if err != nil {
 		panic(err)
 	}

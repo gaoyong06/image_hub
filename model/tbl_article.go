@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-24 11:15:14
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-03 15:10:28
+ * @LastEditTime: 2023-08-04 18:42:01
  * @FilePath: \image_hub\model\article.go
  * @Description: 公众号文章信息
  */
@@ -33,7 +33,28 @@ func GetTblArticle() *TblArticle {
 }
 
 func (t *TblArticle) TableName() string {
-	return "tbl_article_touxiangcool"
+
+	// 琉柒头像
+	// return "tbl_article_lik0894"
+
+	// 头像娣
+	return "tbl_article_Txd777i"
+
+	// 女生头像壁纸控
+	// return "tbl_article_touxiangdiss1"
+
+	// 精选女生头像
+	// return "tbl_article_touxiang_520"
+
+	// 头像先生
+	// return "tbl_article_J79938"
+
+	// 头像味
+	// return "tbl_article_gh_bc125df08550"
+
+	// 小怪兽头像
+	// return "tbl_article_gh_97a6f9e34972"
+
 }
 
 // https://gorm.io/zh_CN/docs/advanced_query.html

@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-03 12:13:15
+ * @LastEditTime: 2023-08-04 15:50:56
  * @FilePath: \image_hub\spiders\base_spider.go
  * @Description: 公众号页面基础爬虫结构体
  */
@@ -41,13 +41,18 @@ var (
 		"优惠的活动",
 		"扫码选礼物",
 		"长按扫码即可添加领取",
+		"博主朋友圈巨宝藏哦",
+		"铂金之恋",
+		"绘画学习",
 	}
 
-	// 文章中需要被过滤的文本内容，文章含有下面文字的行,这一行将会过滤掉
+	// section的text内包含下面的文字,则该行文字替换为空字符串
 	sectionDirtyTexts = []string{
 		// 头像社
 		"微信扫一扫关注该公众号",
 		"微信号",
+		"公众号",
+		"长按小图",
 		"功能介绍",
 		"图源",
 		"来自",
@@ -64,6 +69,8 @@ var (
 		// 情侣头像原创榜
 		"情侣头像原创榜",
 		"头像即新欢",
+		"点击上方蓝色字关注我们",
+		"微信",
 	}
 
 	// 微信名和微信号的Map

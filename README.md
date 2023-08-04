@@ -79,6 +79,9 @@ func (t *TblArticle) TableName() string {
  go run main.go -c ../../configs/config.yaml
 ```
 
+#### 备忘
+1. 增加了"动图","GIF动图"标签, 数据未导入 file:///D:/work/wechat_download_data/html/Dump-0425-09-02-16/20200319_120000_4.html
+
 
 
 内容包括：
