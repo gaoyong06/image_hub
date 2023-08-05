@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-03 17:14:41
+ * @LastEditTime: 2023-08-05 08:12:21
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -66,27 +66,28 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]int
 	url := e.Request.URL.String()
 
 	// 文章标题
-	selector := "h1#activity-name"
-	title := e.ChildText(selector)
+	// selector := "h1#activity-name"
+	// title := e.ChildText(selector)
+	// title := article.Title
 
 	// 微信名
-	selector = "#js_account_nickname"
-	jsAccountNickname := e.ChildText(selector)
+	// selector = "#js_account_nickname"
+	// jsAccountNickname := e.ChildText(selector)
 
-	// 微信号
-	var wechatId string
-	selector = ".profile_meta_value"
-	profileMetaValues := e.ChildTexts(selector)
+	// // 微信号
+	// var wechatId string
+	// selector = ".profile_meta_value"
+	// profileMetaValues := e.ChildTexts(selector)
 
-	if len(profileMetaValues) == 0 {
+	// if len(profileMetaValues) == 0 {
 
-		wechatId = nicknameWechatIdMap[jsAccountNickname]
-		fmt.Printf("html class .profile_meta_value element is empty. title: %s, url: %s", title, url)
-	} else {
-		wechatId = profileMetaValues[0]
-	}
+	// 	wechatId = nicknameWechatIdMap[jsAccountNickname]
+	// 	fmt.Printf("html class .profile_meta_value element is empty. title: %s, url: %s", title, url)
+	// } else {
+	// 	wechatId = profileMetaValues[0]
+	// }
 
-	fmt.Printf("================== wechatId: %s,  title: %s, url: %s ================", wechatId, title, url)
+	// fmt.Printf("================== wechatId: %s,  title: %s, url: %s ================", wechatId, title, url)
 
 	// Get the HTML byte slice of the e element
 	htmlBytes := e.Response.Body
@@ -99,9 +100,10 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]int
 	}
 
 	// 调用每个微信号及其内容索引的自定义方法
+	wechatId := article.WechatId
 	fileIdx := getFileName(url)
 	if len(wechatId) > 0 {
-		funcKey := fmt.Sprintf("%s_%s", wechatId, fileIdx)
+		funcKey := getFuncKey(wechatId, fileIdx)
 		sections = runFunc(funcKey, article, sections)
 	}
 

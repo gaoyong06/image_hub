@@ -65,13 +65,13 @@ var (
 	// dir = "D:/work/wechat_download_data/html/Dump-0425-08-34-41/"
 
 	// 头像娣
-	dir = "D:/work/wechat_download_data/html/Dump-0425-08-48-50/"
-
-	// 女生头像壁纸控
-	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-08-48/"
+	dir = "D:/work/wechat_download_data/html/Dump-0425-08-48-50/1/"
 
 	// 精选女生头像
 	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-02-16/"
+
+	// 女生头像壁纸控
+	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-08-48/"
 
 	// 头像先生
 	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-28-30/"
@@ -81,6 +81,9 @@ var (
 
 	// 小怪兽头像
 	// dir = "D:/work/wechat_download_data/html/Dump-0425-10-14-07/"
+
+	// 二次元头像集
+	// dir = "D:/work/wechat_download_data/html/Dump-0425-10-20-23/"
 )
 
 func main() {

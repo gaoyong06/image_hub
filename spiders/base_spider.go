@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-04 15:50:56
+ * @LastEditTime: 2023-08-05 08:48:40
  * @FilePath: \image_hub\spiders\base_spider.go
  * @Description: 公众号页面基础爬虫结构体
  */
@@ -162,6 +162,17 @@ func (b *baseSpider) ParseData(q *queue.Queue, i interface{}, params map[string]
 	author := e.ChildText(selector)
 	article.Author = author
 
+	// 微信号
+	var wechatId string
+	selector = ".profile_meta_value"
+	profileMetaValues := e.ChildTexts(selector)
+	if len(profileMetaValues) == 0 {
+		wechatId = nicknameWechatIdMap[author]
+	} else {
+		wechatId = profileMetaValues[0]
+	}
+	article.WechatId = wechatId
+
 	// 收录于合集
 	selector = ".article-tag__item"
 	tags := e.ChildTexts(selector)
@@ -195,10 +206,10 @@ func (b *baseSpider) ParseData(q *queue.Queue, i interface{}, params map[string]
 	biz := queryParams.Get("__biz")
 	mid := queryParams.Get("mid")
 
-	article.Idx = cast.ToInt(idx)
+	article.Idx = cast.ToUint(idx)
 	article.Sn = sn
 	article.Biz = biz
-	article.Mid = cast.ToInt(mid)
+	article.Mid = cast.ToUint64(mid)
 	article.LocalPath = e.Request.URL.String()
 
 	return article, nil
@@ -231,6 +242,15 @@ func (b *baseSpider) Process(s Spider, q *queue.Queue, i interface{}, params map
 		// 类型断言进行转换
 		tblArticle, ok := article.(*model.TblArticle)
 		if ok {
+
+			// 如果数据表不存在,则新建数据表
+			err := tblArticle.CreateTableIfNotExists()
+			if err != nil {
+
+				log.Errorf("%s article.CreateTableIfNotExists failed. err: %s\n", s.GetName(), err)
+				fmt.Printf("%s article.CreateTableIfNotExists failed. err: %s\n", s.GetName(), err)
+				return err
+			}
 
 			// 保存数据
 			// 保存到本地article

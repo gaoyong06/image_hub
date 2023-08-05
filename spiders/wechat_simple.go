@@ -2,9 +2,9 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-04 23:11:55
- * @FilePath: \image_hub\spiders\wechat_Txd777i.go
- * @Description: 微信号自定义处理函数-头像娣
+ * @LastEditTime: 2023-08-05 07:48:35
+ * @FilePath: \image_hub\spiders\wechat_default.go
+ * @Description: 微信号自定义处理函数-默认微信账号处理程序
  */
 
 package spiders
@@ -13,9 +13,9 @@ import (
 	"image_hub/model"
 )
 
-// Txd777i, 文章索引: 1的自定义处理函数
+// default, 文章索引: 1的自定义处理函数
 // 头像,壁纸,背景图, 广告内容处理
-func Txd777i(_ *model.TblArticle, sections []model.Section) []model.Section {
+func simple(_ *model.TblArticle, sections []model.Section) []model.Section {
 
 	// Filter out sections with invalid text
 	sections = filterDirtyText(sections)

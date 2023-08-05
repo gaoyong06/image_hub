@@ -2,13 +2,14 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-24 11:15:14
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-04 18:42:01
+ * @LastEditTime: 2023-08-05 09:36:32
  * @FilePath: \image_hub\model\article.go
  * @Description: 公众号文章信息
  */
 package model
 
 import (
+	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -16,16 +17,20 @@ import (
 
 // Article 即一篇公众号文章内容
 type TblArticle struct {
-	Sn          string    `json:"sn"`                              // 一篇文章的唯一标识符
-	Mid         int       `json:"mid"`                             // 每次推送文章的唯一标识符
-	Idx         int       `json:"idx"`                             // 如果一次推送有多篇文章，idx表示当前页面是第几个
-	Biz         string    `json:"biz"`                             // 微信公众号的唯一标识符
-	Author      string    `json:"author"`                          // 公众号作者名称
-	Title       string    `json:"title"`                           // 文章标题
-	Tags        []string  `gorm:"serializer:json" json:"tags"`     // 合集标签
-	Sections    []Section `gorm:"serializer:json" json:"sections"` // 文章分段，一篇文章(article)由多个分段(section)组成
-	LocalPath   string    `json:"local_path"`                      // 文章本地保存路径
-	PublishTime time.Time `json:"publish_time"`                    // 文章发布时间
+	Sn          string    `gorm:"type:VARCHAR(255);column:sn;primary_key USING BTREE" json:"sn"`                                                     // 一篇文章的唯一标识符
+	Mid         uint64    `gorm:"type:BIGINT;column:mid;default:0;NOT NULL" json:"mid"`                                                              // 每次推送文章的唯一标识符
+	Idx         uint      `gorm:"type:INT(11);column:idx;default:0;NOT NULL" json:"idx"`                                                             // 如果一次推送有多篇文章，idx表示当前页面是第几个
+	Biz         string    `gorm:"type:VARCHAR(255);column:biz;NOT NULL" json:"biz"`                                                                  // 微信公众号的唯一标识符
+	Author      string    `gorm:"type:VARCHAR(255);column:author;NOT NULL" json:"author"`                                                            // 公众号作者名称
+	WechatId    string    `gorm:"type:VARCHAR(255);column:wechat_id;NOT NULL" json:"wechat_id"`                                                      // 公众号微信号
+	Title       string    `gorm:"type:VARCHAR(255);column:title;NOT NULL" json:"title"`                                                              // 文章标题
+	Tags        []string  `gorm:"type:MEDIUMTEXT;column:tags;serializer:json" json:"tags"`                                                           // 合集标签
+	Sections    []Section `gorm:"type:MEDIUMTEXT;column:sections;serializer:json" json:"sections"`                                                   // 文章分段，一篇文章(article)由多个分段(section)组成
+	LocalPath   string    `gorm:"type:VARCHAR(255);column:local_path;NOT NULL" json:"local_path"`                                                    // 文章本地保存路径
+	PublishTime time.Time `gorm:"type:TIMESTAMP;column:publish_time;default:'0000-00-00 00:00:00';NOT NULL" json:"publish_time"`                     // 文章发布时间
+	CreatedAt   time.Time `gorm:"type:TIMESTAMP;column:created_at;default:CURRENT_TIMESTAMP;NOT NULL" json:"created_at"`                             // 创建时间
+	UpdatedAt   time.Time `gorm:"type:TIMESTAMP;column:updated_at;default:CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;NOT NULL" json:"updated_at"` // 最后修改时间
+	DeletedAt   time.Time `gorm:"type:TIMESTAMP;column:deleted_at;default:'0000-00-00 00:00:00';NOT NULL" json:"deleted_at"`                         // 删除时间
 }
 
 func GetTblArticle() *TblArticle {
@@ -34,27 +39,29 @@ func GetTblArticle() *TblArticle {
 
 func (t *TblArticle) TableName() string {
 
-	// 琉柒头像
-	// return "tbl_article_lik0894"
+	// 表名为: tbl_article_微信号
+	wechatId := t.WechatId
+	tableName := fmt.Sprintf("%s_%s", "tbl_article", wechatId)
+	return tableName
+}
 
-	// 头像娣
-	return "tbl_article_Txd777i"
+func (t *TblArticle) CreateTableIfNotExists() error {
 
-	// 女生头像壁纸控
-	// return "tbl_article_touxiangdiss1"
+	tableName := t.TableName()
 
-	// 精选女生头像
-	// return "tbl_article_touxiang_520"
+	// Check if the table already exists
+	if DB.Migrator().HasTable(tableName) {
+		return nil
+	}
 
-	// 头像先生
-	// return "tbl_article_J79938"
+	// Create the table
+	err := DB.Set("gorm:table_options", "ENGINE=InnoDB").Table(tableName).AutoMigrate(t)
+	if err != nil {
+		log.Errorf("Failed to create table %s. Error: %+v\n", tableName, err)
+		return err
+	}
 
-	// 头像味
-	// return "tbl_article_gh_bc125df08550"
-
-	// 小怪兽头像
-	// return "tbl_article_gh_97a6f9e34972"
-
+	return nil
 }
 
 // https://gorm.io/zh_CN/docs/advanced_query.html
@@ -67,6 +74,7 @@ func (t *TblArticle) CreateOrUpdate() (string, error) {
 		Sn:          t.Sn,
 		Title:       t.Title,
 		Author:      t.Author,
+		WechatId:    t.WechatId,
 		Tags:        t.Tags,
 		Sections:    t.Sections,
 		LocalPath:   t.LocalPath,
