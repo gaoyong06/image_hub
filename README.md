@@ -140,8 +140,8 @@ func (t *TblArticle) TableName() string {
 | 51 | Dump-0509-09-23-59 | 丸子妹头像 | bq6691 | done |
 | 52 | Dump-0509-09-26-15 | 萌娃表情包可爱 | bqb598 | done |
 | 53 | Dump-0510-10-43-36 | 搞怪头像大全 | gh_089775ff1457 | done |
-| 54 | Dump-0510-10-47-14 | 搞怪沙雕头像 | youtiaotaolu |  |
-| 55 | Dump-0510-10-49-15 | 搞怪头像合集 | gaoguaitx |  |
+| 54 | Dump-0510-10-47-14 | 搞怪沙雕头像 | youtiaotaolu | done |
+| 55 | Dump-0510-10-49-15 | 搞怪头像合集 | gaoguaitx | done |
 | 56 | Dump-0510-10-55-14 | 沙雕头像君 | bao_mihuaqi |  |
 | 57 | Dump-0511-07-36-14 | 古风头像控 | gh_aca0610cf585 |  |
 | 58 | Dump-0511-08-15-18 | 古风头像馆 | gftxg123 |  |
