@@ -142,12 +142,12 @@ func (t *TblArticle) TableName() string {
 | 53 | Dump-0510-10-43-36 | 搞怪头像大全 | gh_089775ff1457 | done |
 | 54 | Dump-0510-10-47-14 | 搞怪沙雕头像 | youtiaotaolu | done |
 | 55 | Dump-0510-10-49-15 | 搞怪头像合集 | gaoguaitx | done |
-| 56 | Dump-0510-10-55-14 | 沙雕头像君 | bao_mihuaqi |  |
-| 57 | Dump-0511-07-36-14 | 古风头像控 | gh_aca0610cf585 |  |
-| 58 | Dump-0511-08-15-18 | 古风头像馆 | gftxg123 |  |
-| 59 | Dump-0511-08-22-58 | 古风壁纸馆 | gfbzg-007 |  |
-| 60 | Dump-0511-08-32-49 | 九栀头像 | afx1990 |  |
-| 61 | Dump-0511-08-38-30 | 胖橘子呀 | Pang-Juziya |  |
+| 56 | Dump-0510-10-55-14 | 沙雕头像君 | bao_mihuaqi | done |
+| 57 | Dump-0511-07-36-14 | 古风头像控 | gh_aca0610cf585 | done |
+| 58 | Dump-0511-08-15-18 | 古风头像馆 | gftxg123 | done |
+| 59 | Dump-0511-08-22-58 | 古风壁纸馆 | gfbzg-007 | done |
+| 60 | Dump-0511-08-32-49 | 九栀头像 | afx1990 | done |
+| 61 | Dump-0511-08-38-30 | 胖橘子呀 | Pang-Juziya | done |
 | 62 | Dump-0511-08-43-21 | 玫竹斋 | meizhuzhai |  |
 | 63 | Dump-0512-23-46-10 | 草莓头像 | touxiangforever |  |
 
