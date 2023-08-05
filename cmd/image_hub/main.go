@@ -32,6 +32,9 @@ var (
 	configFile        string
 	defaultConfigFile = "conf/config.yaml"
 
+	// 待处理的目录, 从命令行-d参数传入
+	dir string
+
 	// 注意: dir必须以/结尾
 	// Define the directory to traverse
 	// 头像社
@@ -65,7 +68,7 @@ var (
 	// dir = "D:/work/wechat_download_data/html/Dump-0425-08-34-41/"
 
 	// 头像娣
-	dir = "D:/work/wechat_download_data/html/Dump-0425-08-48-50/"
+	// dir = "D:/work/wechat_download_data/html/Dump-0425-08-48-50/"
 
 	// 精选女生头像
 	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-02-16/"
@@ -135,7 +138,6 @@ func Run() {
 		panic(err)
 	}
 	params["dataSrcRepeat"] = dataSrcRepeat
-
 	// request local files
 	// https://github.com/gocolly/colly/blob/master/_examples/local_files/local_files.go
 	t := &http.Transport{}
@@ -308,8 +310,8 @@ func Run() {
 func initFlag() error {
 	//init params
 	h := flag.Bool("h", false, "application help")
-
 	c := flag.String("c", "", "config file, ex: /data/config.yaml")
+	d := flag.String("d", "", "the directory to be processed, ex: D:/work/wechat_download_data/html/Dump-0425-08-48-50/")
 
 	flag.Parse()
 
@@ -326,7 +328,14 @@ func initFlag() error {
 		*c = binPath + "/../" + defaultConfigFile
 	}
 
+	if *d == "" {
+		flag.PrintDefaults()
+		os.Exit(0)
+		return nil
+	}
+
 	configFile = *c
+	dir = *d
 
 	return nil
 }

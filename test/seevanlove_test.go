@@ -23,7 +23,7 @@ func TestSeevanlove(t *testing.T) {
 	file := "D:/work/wechat_download_data/html/Dump-0422-20-12-37/20230315_222813_1.html"
 
 	// 计算目录下的html内的img标签重复的data-src
-	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir)
+	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir, 2)
 	if err != nil {
 		panic(err)
 	}
