@@ -65,7 +65,7 @@ var (
 	// dir = "D:/work/wechat_download_data/html/Dump-0425-08-34-41/"
 
 	// 头像娣
-	dir = "D:/work/wechat_download_data/html/Dump-0425-08-48-50/1/"
+	dir = "D:/work/wechat_download_data/html/Dump-0425-08-48-50/"
 
 	// 精选女生头像
 	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-02-16/"
@@ -129,7 +129,7 @@ func Run() {
 
 	params := make(map[string]interface{})
 	// 计算目录下的html内的img标签重复的data-src
-	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir)
+	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir, 2)
 	fmt.Printf("dataSrcRepeat: %+v\n", dataSrcRepeat)
 	if err != nil {
 		panic(err)

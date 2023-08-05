@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-04 23:09:42
+ * @LastEditTime: 2023-08-05 11:14:11
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -133,7 +133,7 @@ func GetHtmlImageTypes(htmlStr string) ([]string, error) {
 		imageTypes = append(imageTypes, "wallpaper")
 	}
 
-	if strings.Contains(text, "表情包") {
+	if strings.Contains(text, "表情") {
 		imageTypes = append(imageTypes, "sticker")
 	}
 
@@ -470,7 +470,8 @@ func InferImageTypeFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, 
 
 // 根据HTML文本提取所有图片的信息，并返回符合要求的图片信息及被过滤的图片信息
 // 读取directoryPath所有html的文件将各个文件中的img标签的data-src内的值取出来如果重复出现(出现次数大于1),则记录下来返回
-func GetImageDataSrcRepeat(directoryPath string) ([]string, error) {
+// maxRepeated 记录重复的数量，如果大于maxRepeated则表示有重复的图片
+func GetImageDataSrcRepeat(directoryPath string, maxRepeated int) ([]string, error) {
 
 	if !strings.HasSuffix(directoryPath, "/") {
 		directoryPath = directoryPath + "/"
@@ -484,9 +485,6 @@ func GetImageDataSrcRepeat(directoryPath string) ([]string, error) {
 	if !info.IsDir() {
 		return nil, fmt.Errorf("directoryPath argument is not a directory")
 	}
-
-	// 记录重复的数量，如果大于1则表示有重复的图片
-	maxRepeated := 1
 
 	// First, we need to get a list of all HTML files in the given directory
 	htmlFiles, err := filepath.Glob(directoryPath + "*.html")
@@ -553,7 +551,6 @@ func GetImageDataSrcRepeat(directoryPath string) ([]string, error) {
 		}
 	}
 
-	fmt.Println("=========== GetImageDataSrcRepeat STOP ===============")
 	return dataSrcRepeat, nil
 }
 

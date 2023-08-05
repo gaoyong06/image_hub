@@ -53,7 +53,7 @@ func main() {
 	allFilteredImgs := make(map[string]map[string]interface{})
 
 	// 计算目录下的html内的img标签重复的data-src
-	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(directoryPath)
+	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(directoryPath, 2)
 	if err != nil {
 		panic(err)
 	}
