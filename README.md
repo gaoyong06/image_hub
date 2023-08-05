@@ -83,6 +83,88 @@ func (t *TblArticle) TableName() string {
 1. 增加了"动图","GIF动图"标签, 数据未导入 file:///D:/work/wechat_download_data/html/Dump-0425-09-02-16/20200319_120000_4.html
 
 
+#### 目录处理记录
+| | | | | |
+| -------- | ------------------------------- | ------------------------------- | ------------------------------- | ------------------------------- |
+| 序号 | 目录名 | 公众号 | 微信号 | 状态 |
+| 1 | Dump-0421-11-15-39 | 头像社 | touxiangshe | done |
+| 2 | Dump-0422-20-12-37 | 情侣头像原创榜 | seevanlove | done |
+| 3 | Dump-0422-20-45-37 | 头像有点好看 | gh_8c96baecf453 | done |
+| 4 | Dump-0422-20-54-12 | 头像即新欢 | gh_22c17e1db325 | done |
+| 5 | Dump-0422-21-05-01 | 元気头像 | NiceWallpaper | done |
+| 6 | Dump-0423-11-39-39 | 头像库 | touxiangcool | done |
+| 7 | Dump-0423-12-06-34 | 头像文案 | fashionshijue | done |
+| 8 | Dump-0423-19-16-40 | 你的小众头像 | h13031h | done |
+| 9 | Dump-0423-19-23-35 | 换头像bo | htxb888 | done |
+| 10 | Dump-0423-19-29-57 | 每日新头像 | gh_75640868571b | done |
+| 11 | Dump-0423-19-36-06 | 头像备忘录 | DNTX9527 | done |
+| 12 | Dump-0423-19-49-05 | 小鹿头像酱 | fairy_goods_thing | done |
+| 13 | Dump-0423-19-56-42 | 梅头像 | MXLtou | done |
+| 14 | Dump-0423-20-18-59 | 可爱cp头像 | tcgonglue | done |
+| 15 | Dump-0423-20-51-56 | 要啥头像 | gh_cdb453299489 | done |
+| 16 | Dump-0425-08-23-57 | 情侣头像大全 | qltxdq | done |
+| 17 | Dump-0425-08-29-21 | 暮昭昭头像馆 | MzzTxg | done |
+| 18 | Dump-0425-08-34-41 | 琉柒头像 | lik0894 | done  |
+| 19 | Dump-0425-08-48-50 | 头像娣 | Txd777i | done  |
+| 20 | Dump-0425-09-02-16 | 精选女生头像 | touxiang_520 | done  |
+| 21 | Dump-0425-09-08-48 | 女生头像壁纸控 | touxiangdiss1 | done |
+| 22 | Dump-0425-09-28-30 | 头像先生 | J79938 | done  |
+| 23 | Dump-0425-10-08-29 | 头像味 | gh_bc125df08550 | done |
+| 24 | Dump-0425-10-14-07 | 小怪兽头像 | gh_97a6f9e34972 | done |
+| 25 | Dump-0425-10-20-23 | 二次元头像集 | cpdd52199 | done |
+| 26 | Dump-0425-10-23-36 | 头像壁纸大全 | txbz001 | done |
+| 27 | Dump-0425-10-30-17 | 搞怪沙雕头像 | youtiaotaolu | done |
+| 28 | Dump-0425-10-35-23 | 头像记 | laixieee | done |
+| 29 | Dump-0425-10-38-12 | 头像酱呀 | bizhi1994 | done |
+| 30 | Dump-0425-10-42-59 | 头像文案 | fashionshijue | done |
+| 31 | Dump-0428-22-35-17 | 头像辑 | touxiangh | done |
+| 32 | Dump-0428-22-40-43 | 头像博主 | txbozhu | done |
+| 33 | Dump-0428-22-46-16 | 头像号 | remenyt | done |
+| 34 | Dump-0428-22-55-02 | 百合头像 | baihetouxiang | done |
+| 35 | Dump-0428-23-03-29 | 背景头像 | meaijiepai | done |
+| 36 | Dump-0429-18-36-56 | 头像录 | liaoshangbiji | done |
+| 37 | Dump-0429-18-40-36 | 头像哒 | gh_367e376abfe0 | done |
+| 38 | Dump-0429-18-44-47 | 女生头像宝藏集 | gh_a600aed1c30d | done |
+| 39 | Dump-0503-21-16-12 | 超火情侣头像 | chanxuehuiyu | done |
+| 40 | Dump-0504-10-02-15 | 头像社 | touxiangshe | done |
+| 41 | Dump-0505-23-31-52 | 头像壁纸每日推荐 | touxbizhimeiriTJ |  |
+| 42 | Dump-0507-10-40-20 | 搞怪头像大全 | gh_089775ff1457 |  |
+| 43 | Dump-0507-12-39-56 | 头像微甜 | txwt-sweet |  |
+| 44 | Dump-0508-00-15-59 | 女生头像壁纸 | nvshengtouxiang1 |  |
+| 45 | Dump-0508-08-18-06 | ULzzang头像 | Ins-face |  |
+| 46 | Dump-0508-08-21-43 | 头像书 | Txs5665 |  |
+| 47 | Dump-0508-08-24-32 | 头像大全丫 | wulai969 |  |
+| 48 | Dump-0509-09-13-18 | 可爱萌娃头像大全 | mwtx66695 |  |
+| 49 | Dump-0509-09-18-51 | 萌娃头像库 | gh_bb13ee258433 |  |
+| 50 | Dump-0509-09-20-43 | 可爱萌娃头像 | bqv8897 |  |
+| 51 | Dump-0509-09-23-59 | 丸子妹头像 | bq6691 |  |
+| 52 | Dump-0509-09-26-15 | 萌娃表情包可爱 | bqb598 |  |
+| 53 | Dump-0510-10-43-36 | 搞怪头像大全 | gh_089775ff1457 |  |
+| 54 | Dump-0510-10-47-14 | 搞怪沙雕头像 | youtiaotaolu |  |
+| 55 | Dump-0510-10-49-15 | 搞怪头像合集 | gaoguaitx |  |
+| 56 | Dump-0510-10-55-14 | 沙雕头像君 | bao_mihuaqi |  |
+| 57 | Dump-0511-07-36-14 | 古风头像控 | gh_aca0610cf585 |  |
+| 58 | Dump-0511-08-15-18 | 古风头像馆 | gftxg123 |  |
+| 59 | Dump-0511-08-22-58 | 古风壁纸馆 | gfbzg-007 |  |
+| 60 | Dump-0511-08-32-49 | 九栀头像 | afx1990 |  |
+| 61 | Dump-0511-08-38-30 | 胖橘子呀 | Pang-Juziya |  |
+| 62 | Dump-0511-08-43-21 | 玫竹斋 | meizhuzhai |  |
+| 63 | Dump-0512-23-46-10 | 草莓头像 | touxiangforever |  |
+
+ 
+
+
+
+
+
+ 
+
+
+
+
+
+
+
 
 内容包括：
 
@@ -167,3 +249,6 @@ ins 头像
 - 线上包：./build/build.sh content_service release 1.0.0
 
 #### 注意事项
+
+
+
