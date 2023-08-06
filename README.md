@@ -148,8 +148,8 @@ func (t *TblArticle) TableName() string {
 | 59 | Dump-0511-08-22-58 | 古风壁纸馆 | gfbzg-007 | done |
 | 60 | Dump-0511-08-32-49 | 九栀头像 | afx1990 | done |
 | 61 | Dump-0511-08-38-30 | 胖橘子呀 | Pang-Juziya | done |
-| 62 | Dump-0511-08-43-21 | 玫竹斋 | meizhuzhai |  |
-| 63 | Dump-0512-23-46-10 | 草莓头像 | touxiangforever |  |
+| 62 | Dump-0511-08-43-21 | 玫竹斋 | meizhuzhai | done |
+| 63 | Dump-0512-23-46-10 | 草莓头像 | touxiangforever | done |
 
  
 
