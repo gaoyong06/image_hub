@@ -35,7 +35,12 @@ imageHub,是一个图片内容源服务，主要服务 content_service 的内容
 go run main.go -c ../../configs/config.yaml -d D:/work/wechat_download_data/html/Dump-0511-08-43-21/
 ```
 
-1. 上面这个命令会自动在image_hub库中字段创建公众号对应的数据表，如果数据表不存在的到
+1. 上面这个命令会自动在image_hub库中字段创建公众号对应的数据表，如果数据表不存在的话
+2. 使用下面的shell命令,将image_hub中所有tbl_article_后缀名, 合并到数据表tbl_article
+```
+./merge_article_table.sh
+```
+3. 注意: tbl_article_后缀名 中,后缀名为微信号，但是如果微信号中如果包含中划线"-", 会将中划线"-"替换为下划线"_"
 
 
 #### 新公众号内容导入步骤(旧方法)

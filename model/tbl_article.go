@@ -10,6 +10,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -40,7 +41,9 @@ func GetTblArticle() *TblArticle {
 func (t *TblArticle) TableName() string {
 
 	// 表名为: tbl_article_微信号
-	wechatId := t.WechatId
+	// 注意: tbl_article_后缀名 中,后缀名为微信号，但是如果微信号中如果包含中划线"-", 会将中划线"-"替换为下划线"_"
+	wechatId := strings.Replace(t.WechatId, "-", "_", -1)
+
 	tableName := fmt.Sprintf("%s_%s", "tbl_article", wechatId)
 	return tableName
 }
