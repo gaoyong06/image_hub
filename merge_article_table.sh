@@ -26,7 +26,7 @@ for table in $suffix_tables; do
     counter=$((counter+1))
     echo "Processing table $counter of $total_tables: $table"
     
-    mysql -h $host -P $port -u $user -p$passwd $database -e "INSERT INTO tbl_article (sn, mid, idx, biz, author, wechat_id, title, tags, sections, local_path, publish_time, created_at, updated_at, deleted_at) SELECT sn, mid, idx, biz, author, wechat_id, title, tags, sections, local_path, publish_time, created_at, updated_at, deleted_at FROM `$table` ON DUPLICATE KEY UPDATE sn = VALUES(sn), mid = VALUES(mid), idx = VALUES(idx), biz = VALUES(biz), author = VALUES(author), wechat_id = VALUES(wechat_id), title = VALUES(title), tags = VALUES(tags), sections = VALUES(sections), local_path = VALUES(local_path), publish_time = VALUES(publish_time), created_at = VALUES(created_at), updated_at = VALUES(updated_at), deleted_at = VALUES(deleted_at);"
+    mysql -h $host -P $port -u $user -p$passwd $database -e "INSERT INTO tbl_article (sn, mid, idx, biz, author, wechat_id, title, tags, sections, local_path, publish_time, created_at, updated_at, deleted_at) SELECT sn, mid, idx, biz, author, wechat_id, title, tags, sections, local_path, publish_time, created_at, updated_at, deleted_at FROM $table ON DUPLICATE KEY UPDATE sn = VALUES(sn), mid = VALUES(mid), idx = VALUES(idx), biz = VALUES(biz), author = VALUES(author), wechat_id = VALUES(wechat_id), title = VALUES(title), tags = VALUES(tags), sections = VALUES(sections), local_path = VALUES(local_path), publish_time = VALUES(publish_time), created_at = VALUES(created_at), updated_at = VALUES(updated_at), deleted_at = VALUES(deleted_at);"
     
     echo "Table $counter of $total_tables: $table processed"
 done

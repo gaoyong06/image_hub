@@ -30,7 +30,16 @@ imageHub,是一个图片内容源服务，主要服务 content_service 的内容
 9. 通过onePageSpider.Process调用base_spider.go中的Process方法将上述解析到的Article和sections保存到db,支持重复覆盖方式写入
 
 
-#### 新公众号内容导入步骤
+#### 新公众号内容导入步骤(新方法)
+```
+go run main.go -c ../../configs/config.yaml -d D:/work/wechat_download_data/html/Dump-0511-08-43-21/
+```
+
+1. 上面这个命令会自动在image_hub库中字段创建公众号对应的数据表，如果数据表不存在的到
+
+
+#### 新公众号内容导入步骤(旧方法)
+
 1. 查看工作号"微信号", 假设微信号为:abc
 
 2. 在image_hub/cmd/image_hub/main.go中修改需要被处理的html文档目录
@@ -78,6 +87,9 @@ func (t *TblArticle) TableName() string {
 ```
  go run main.go -c ../../configs/config.yaml
 ```
+
+
+
 
 #### 备忘
 1. 增加了"动图","GIF动图"标签, 数据未导入 file:///D:/work/wechat_download_data/html/Dump-0425-09-02-16/20200319_120000_4.html
