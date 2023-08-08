@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"image_hub/model"
+	"image_hub/params"
 	"image_hub/spiders"
 
 	nested "github.com/antonfisher/nested-logrus-formatter"
@@ -34,59 +35,6 @@ var (
 
 	// 待处理的目录, 从命令行-d参数传入
 	dir string
-
-	// 注意: dir必须以/结尾
-	// Define the directory to traverse
-	// 头像社
-	// dir = "D:/work/wechat_download_data/html/Dump-0421-11-15-39/"
-
-	// 头像有点好看
-	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-45-37/"
-
-	// 头像即新欢
-	// dir = "D:/work/wechat_download_data/html/Dump-0422-20-54-12/"
-
-	// 头像库
-	// dir = "D:/work/wechat_download_data/html/Dump-0423-11-39-39/"
-
-	// 头像文案
-	// dir = "D:/work/wechat_download_data/html/Dump-0423-12-06-34/"
-
-	// 你的小众头像
-	// dir = "D:/work/wechat_download_data/html/Dump-0423-19-16-40/"
-
-	// 换头像bo
-	// dir = "D:/work/wechat_download_data/html/Dump-0423-19-23-35/1/"
-
-	// 每日新头像
-	// dir = "D:/work/wechat_download_data/html/Dump-0423-19-29-57/"
-
-	// 要啥头像
-	// dir = "D:/work/wechat_download_data/html/Dump-0423-20-51-56/"
-
-	// 琉柒头像
-	// dir = "D:/work/wechat_download_data/html/Dump-0425-08-34-41/"
-
-	// 头像娣
-	// dir = "D:/work/wechat_download_data/html/Dump-0425-08-48-50/"
-
-	// 精选女生头像
-	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-02-16/"
-
-	// 女生头像壁纸控
-	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-08-48/"
-
-	// 头像先生
-	// dir = "D:/work/wechat_download_data/html/Dump-0425-09-28-30/"
-
-	// 头像味
-	// dir = "D:/work/wechat_download_data/html/Dump-0425-10-08-29/"
-
-	// 小怪兽头像
-	// dir = "D:/work/wechat_download_data/html/Dump-0425-10-14-07/"
-
-	// 二次元头像集
-	// dir = "D:/work/wechat_download_data/html/Dump-0425-10-20-23/"
 )
 
 func main() {
@@ -130,14 +78,18 @@ func Init() error {
 
 func Run() {
 
-	params := make(map[string]interface{})
+	extra := make(map[string]interface{})
 	// 计算目录下的html内的img标签重复的data-src
 	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir, 2)
 	fmt.Printf("dataSrcRepeat: %+v\n", dataSrcRepeat)
 	if err != nil {
 		panic(err)
 	}
-	params["dataSrcRepeat"] = dataSrcRepeat
+
+	// 将params.SectionDirtyImgDataSrc中定义需要过滤的图片,追加到dataSrcRepeat中一并参加过滤
+	filteredImgDataSrc := append(dataSrcRepeat, params.SectionDirtyImgDataSrc...)
+
+	extra["filteredImgDataSrc"] = filteredImgDataSrc
 	// request local files
 	// https://github.com/gocolly/colly/blob/master/_examples/local_files/local_files.go
 	t := &http.Transport{}
@@ -199,7 +151,7 @@ func Run() {
 		fmt.Printf("=============== c.OnHTML: [%d]%s, %s\n", e.Request.ID, urlType, e.Request.URL)
 
 		onePageSpider := spiders.NewOnePage(spiders.OnePage)
-		err := onePageSpider.Process(onePageSpider, q, e, params)
+		err := onePageSpider.Process(onePageSpider, q, e, extra)
 		if err != nil {
 			log.Errorf("onePageSpider.Process failed. err: %s\n", err)
 			fmt.Printf("onePageSpider.Process failed. err: %s\n", err)
@@ -287,11 +239,11 @@ func Run() {
 		// 替换 \ 为 /
 		// D:\work\wechat_download_data\html\test\20220526_111900_1.html
 		// D:/work/wechat_download_data/html/test/20220526_111900_1.html
-		params["path"] = strings.ReplaceAll(path, "\\", "/")
+		extra["path"] = strings.ReplaceAll(path, "\\", "/")
 
 		// Process the file with the selected spider
-		fmt.Printf("==============  spider.AddReqToQueue. spider: %+v,  path: %+v\n", spider.GetName(), params["path"])
-		err = spider.AddReqToQueue(q, nil, params)
+		fmt.Printf("==============  spider.AddReqToQueue. spider: %+v,  path: %+v\n", spider.GetName(), extra["path"])
+		err = spider.AddReqToQueue(q, nil, extra)
 		if err != nil {
 			return err
 		}

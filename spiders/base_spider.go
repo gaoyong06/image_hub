@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-07 17:50:29
+ * @LastEditTime: 2023-08-08 11:23:31
  * @FilePath: \image_hub\spiders\base_spider.go
  * @Description: 公众号页面基础爬虫结构体
  */
@@ -11,6 +11,7 @@ package spiders
 import (
 	"fmt"
 	"image_hub/model"
+	"image_hub/params"
 	"image_hub/pkg/utils"
 	"net/url"
 	"strings"
@@ -29,148 +30,6 @@ var (
 	// 已访问的url,避免重复访问
 	visited = cmap.New[bool]()
 	// make(map[string]bool)
-
-	// tag内的需要被替换为空的特殊字符
-	tagDirtyTexts = []string{
-		"#",
-		"☺︎",
-	}
-
-	// 如果文字中含有下面广告关键字则直接跳过,不做处理
-	adKeywords = []string{
-		"优惠的活动",
-		"扫码选礼物",
-		"长按扫码即可添加领取",
-		"博主朋友圈巨宝藏哦",
-		"铂金之恋",
-		"绘画学习",
-	}
-
-	// section的text内包含下面的文字,则该行文字替换为空字符串
-	sectionDirtyTexts = []string{
-		// 头像社
-		"微信扫一扫关注该公众号",
-		"微信号",
-		"公众号",
-		"长按小图",
-		"功能介绍",
-		"图源",
-		"来自",
-		"👇🏻👇🏻👇🏻",
-		"@",
-		"©️",
-		"cr",
-		"你们要的",
-		"\u200d\u200d",
-		"转自",
-		"长按保存",
-		"点击上方“蓝字”关注我",
-
-		// 情侣头像原创榜
-		"情侣头像原创榜",
-		"头像即新欢",
-		"点击上方蓝色字关注我们",
-		"微信",
-		"头像研究舍",
-		"头像研究舍",
-		"点击图片放大，长按图片保存",
-		"■",
-		"-",
-		"。",
-		"▼",
-		"",
-		"男生头像 / 动漫头像 / 壁纸 / 手机壁纸 / 无水印壁纸 / 朋友圈背景图",
-		"头像/无水印头像/个性头像 / 明星头像 / 女生头像 /男生头像 / 动漫头像 / 壁纸 / 手机壁纸 / 无水印壁纸 / 朋友圈背景图 头像/无水印头像/个性头像 / 明星头像 / 女生头像 /男生头像 / 动漫头像 / 壁纸 / 手机壁纸 / 无水印壁纸 / 朋友圈背景图",
-		"按图片即可保存",
-		"01",
-		"02",
-		"03",
-		"04",
-		"05",
-		"06",
-		"07",
-		"08",
-		"09",
-		"10",
-		"#",
-		"◆",
-		"#",
-		"75307601",
-		"关注我们哦",
-		"点击预览",
-		"上下滑动信封内纸张",
-		"下浏览",
-		"点击图片放大",
-		"探索粉丝基地精彩内容",
-		"一定要收藏",
-		"有抽奖",
-		"抖音",
-		"快手",
-	}
-
-	// 微信名和微信号的Map
-	nicknameWechatIdMap = map[string]string{
-
-		"头像社":       "touxiangshe",
-		"情侣头像原创榜":   "seevanlove",
-		"头像有点好看":    "gh_8c96baecf453",
-		"头像即新欢":     "gh_22c17e1db325",
-		"元気头像":      "NiceWallpaper",
-		"头像库":       "touxiangcool",
-		"头像文案":      "fashionshijue",
-		"你的小众头像":    "h13031h",
-		"换头像bo":     "htxb888",
-		"每日新头像":     "gh_75640868571b",
-		"头像备忘录":     "DNTX9527",
-		"小鹿头像酱":     "fairy_goods_thing",
-		"梅头像":       "MXLtou",
-		"可爱cp头像":    "tcgonglue",
-		"要啥头像":      "gh_cdb453299489",
-		"情侣头像大全":    "qltxdq",
-		"暮昭昭头像馆":    "MzzTxg",
-		"琉柒头像":      "lik0894",
-		"头像娣":       "Txd777i",
-		"精选女生头像":    "touxiang_520",
-		"女生头像壁纸控":   "touxiangdiss1",
-		"头像先生":      "J79938",
-		"头像味":       "gh_bc125df08550",
-		"小怪兽头像":     "gh_97a6f9e34972",
-		"二次元头像集":    "cpdd52199",
-		"头像壁纸大全":    "txbz001",
-		"搞怪沙雕头像":    "youtiaotaolu",
-		"头像记":       "laixieee",
-		"头像酱呀":      "bizhi1994",
-		"头像辑":       "touxiangh",
-		"头像博主":      "txbozhu",
-		"头像号":       "remenyt",
-		"百合头像":      "baihetouxiang",
-		"背景头像":      "meaijiepai",
-		"头像录":       "liaoshangbiji",
-		"头像哒":       "gh_367e376abfe0",
-		"女生头像宝藏集":   "gh_a600aed1c30d",
-		"超火情侣头像":    "chanxuehuiyu",
-		"头像壁纸每日推荐":  "touxbizhimeiriTJ",
-		"搞怪头像大全":    "gh_089775ff1457",
-		"头像微甜":      "txwt-sweet",
-		"女生头像壁纸":    "nvshengtouxiang1",
-		"ULzzang头像": "Ins-face",
-		"头像书":       "Txs5665",
-		"头像大全丫":     "wulai969",
-		"可爱萌娃头像大全":  "mwtx66695",
-		"萌娃头像库":     "gh_bb13ee258433",
-		"可爱萌娃头像":    "bqv8897",
-		"丸子妹头像":     "bq6691",
-		"萌娃表情包可爱":   "bqb598",
-		"搞怪头像合集":    "gaoguaitx",
-		"沙雕头像君":     "bao_mihuaqi",
-		"古风头像控":     "gh_aca0610cf585",
-		"古风头像馆":     "gftxg123",
-		"古风壁纸馆":     "gfbzg-007",
-		"九栀头像":      "afx1990",
-		"胖橘子呀":      "Pang-Juziya",
-		"玫竹斋":       "meizhuzhai",
-		"草莓头像":      "touxiangforever",
-	}
 )
 
 // 定义公众号页面基础爬虫结构体
@@ -200,9 +59,9 @@ func (b *baseSpider) GetName() string {
 // q 请求队列
 // e 上级页面HTMLElement,没有时设置为nil
 // baseUrl 请求的基准url,目的是为页面内的相对地址补全为完整的地址
-func (b *baseSpider) AddReqToQueue(q *queue.Queue, i interface{}, params map[string]interface{}) error {
+func (b *baseSpider) AddReqToQueue(q *queue.Queue, i interface{}, extra map[string]interface{}) error {
 
-	path := params["path"].(string)
+	path := extra["path"].(string)
 
 	// 目前至支持解析本地文件
 	pathUrl := fmt.Sprintf("file://%s", path)
@@ -232,7 +91,7 @@ func (b *baseSpider) AddReqToQueue(q *queue.Queue, i interface{}, params map[str
 // 解析将爬取到的数据至一个规范的结构体中
 // e 当前爬虫请求的返回结果 *colly.HTMLElement 或者  *colly.Response
 // baseUrl 请求的基准url,目的是为页面内的相对地址补全为完整的地址
-func (b *baseSpider) ParseData(q *queue.Queue, i interface{}, params map[string]interface{}) (interface{}, error) {
+func (b *baseSpider) ParseData(q *queue.Queue, i interface{}, extra map[string]interface{}) (interface{}, error) {
 
 	// 解析返回html结果
 	article := &model.TblArticle{}
@@ -258,7 +117,7 @@ func (b *baseSpider) ParseData(q *queue.Queue, i interface{}, params map[string]
 	selector = ".profile_meta_value"
 	profileMetaValues := e.ChildTexts(selector)
 	if len(profileMetaValues) == 0 {
-		wechatId = nicknameWechatIdMap[author]
+		wechatId = params.NicknameWechatIdMap[author]
 	} else {
 		wechatId = profileMetaValues[0]
 	}
@@ -270,7 +129,7 @@ func (b *baseSpider) ParseData(q *queue.Queue, i interface{}, params map[string]
 
 	lop.ForEach(tags, func(tag string, i int) {
 
-		lop.ForEach(tagDirtyTexts, func(text string, j int) {
+		lop.ForEach(params.TagDirtyTexts, func(text string, j int) {
 			tag = strings.ReplaceAll(tag, text, "")
 		})
 		tags[i] = tag
@@ -314,7 +173,7 @@ func (b *baseSpider) ParseData(q *queue.Queue, i interface{}, params map[string]
 // baseUrl 请求的基准url,目的是为页面内的相对地址补全为完整的地址
 // golang不支持虚拟方法(父类调用子类方法),所以在Process方法中,把"子类"的Process,作为第一个参数传进去
 // params 自定义参数,向下层业务传递参数
-func (b *baseSpider) Process(s Spider, q *queue.Queue, i interface{}, params map[string]interface{}) error {
+func (b *baseSpider) Process(s Spider, q *queue.Queue, i interface{}, extra map[string]interface{}) error {
 
 	e, ok := i.(*colly.HTMLElement)
 	if !ok {
@@ -322,7 +181,7 @@ func (b *baseSpider) Process(s Spider, q *queue.Queue, i interface{}, params map
 	}
 
 	// 解析返回json结果
-	article, err := s.ParseData(q, e, params)
+	article, err := s.ParseData(q, e, extra)
 	if err != nil {
 		log.Errorf("%s ParseData failed. err: %s, url: %+v\n", s.GetName(), err, e.Request.URL.String())
 		return err

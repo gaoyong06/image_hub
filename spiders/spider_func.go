@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-05 11:14:11
+ * @LastEditTime: 2023-08-08 11:52:35
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"image"
 	"image_hub/model"
+	"image_hub/params"
 	"image_hub/pkg/helper"
 	"image_hub/pkg/utils"
 	"io/ioutil"
@@ -81,7 +82,7 @@ var (
 // 判断内容是否是广告
 func IsAd(htmlStr string) bool {
 
-	for _, keyword := range adKeywords {
+	for _, keyword := range params.AdKeywords {
 		if strings.Contains(htmlStr, keyword) {
 			return true
 		}
@@ -143,8 +144,8 @@ func GetHtmlImageTypes(htmlStr string) ([]string, error) {
 // 从HTML字符串中解析出Section数组，包含文字和图片
 // htmlStr 待解析的html字符串
 //
-// dataSrcRepeat htmlStr所在的文件目录内的所有html中，重复的图片构成的数组
-func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]model.Section, error) {
+// filteredImgDataSrc htmlStr所在的文件目录内的所有html中，需要被过滤的image data src
+func ParseSectionsFromHTML(htmlUrl, htmlStr string, filteredImgDataSrc []string) ([]model.Section, error) {
 
 	doc, err := html.Parse(strings.NewReader(htmlStr))
 	if err != nil {
@@ -154,7 +155,7 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 	sectionIdx := 0
 	var sections []model.Section
 
-	// 获取不符合规则(不是头像，背景图，壁纸，表情包规范)的图片
+	// 推测的获取不符合规则(不是头像，背景图，壁纸，表情包规范)的图片
 	var filteredImgSrcs []string
 	var filteredImgs map[string]map[string]interface{}
 
@@ -203,7 +204,7 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 			return true
 		}
 
-		// 如果当前节点为img标签，提取其中的data-src属性，检查data-src属性值是否在dataSrcRepeat中,如果存在则跳过
+		// 如果当前节点为img标签，提取其中的data-src属性，检查data-src属性值是否在filteredImgDataSrc中,如果存在则跳过
 		if n.Type == html.ElementNode && n.Data == "img" {
 
 			var dataSrc string
@@ -220,8 +221,8 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, dataSrcRepeat []string) ([]m
 			}
 
 			// 如果同一个图片在多个网页中重复出现，则可能是宣传图，过滤掉
-			if utils.Contains(dataSrcRepeat, dataSrc) {
-				fmt.Printf("========================= dataSrcRepeat. src: %s\n", src)
+			if utils.Contains(filteredImgDataSrc, dataSrc) {
+				fmt.Printf("========================= filteredImgDataSrc. src: %s\n", src)
 				return true
 			}
 
@@ -581,7 +582,7 @@ func filterDirtyText(sections []model.Section) []model.Section {
 	if len(sections) > 0 {
 		for i := len(sections) - 1; i >= 0; i-- {
 			if len(sections[i].Text) > 0 {
-				for _, dirtyText := range sectionDirtyTexts {
+				for _, dirtyText := range params.SectionDirtyTexts {
 					if strings.Contains(sections[i].Text, dirtyText) {
 						sections[i].Text = ""
 						break

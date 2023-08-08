@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-05 11:18:11
+ * @LastEditTime: 2023-08-08 11:24:04
  * @FilePath: \image_hub\spiders\first_page.go
  * @Description: 微信公众号第1条内容抓取-头像
  */
@@ -42,10 +42,10 @@ func NewOnePage(name string) Spider {
 //  7. 最终得到sections组装到该html解析到的Article结构体中，就完成了从一个page的html字符串至Article结构体的解析
 //
 // e *colly.HTMLElement 或者  *colly.Response
-func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]interface{}) (interface{}, error) {
+func (s *onePage) ParseData(q *queue.Queue, i interface{}, extra map[string]interface{}) (interface{}, error) {
 
-	dataSrcRepeat := params["dataSrcRepeat"].([]string)
-	articleBase, err := s.baseSpider.ParseData(q, i, params)
+	filteredImgDataSrc := extra["filteredImgDataSrc"].([]string)
+	articleBase, err := s.baseSpider.ParseData(q, i, extra)
 	if err != nil {
 		return nil, fmt.Errorf("invalid type: %T, expected *colly.HTMLElement", i)
 	}
@@ -70,7 +70,7 @@ func (s *onePage) ParseData(q *queue.Queue, i interface{}, params map[string]int
 	htmlStr := string(htmlBytes)
 
 	// Parse the HTML string to extract the sections
-	sections, err := ParseSectionsFromHTML(url, htmlStr, dataSrcRepeat)
+	sections, err := ParseSectionsFromHTML(url, htmlStr, filteredImgDataSrc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse sections from HTML: %v", err)
 	}
