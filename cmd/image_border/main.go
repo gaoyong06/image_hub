@@ -53,7 +53,7 @@ func main() {
 	allFilteredImgs := make(map[string]map[string]interface{})
 
 	// 计算目录下的html内的img标签重复的data-src
-	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(directoryPath, 2)
+	decodedDataSrcRepeat, err := spiders.GetDecodedImageDataSrcRepeat(directoryPath, 2)
 	if err != nil {
 		panic(err)
 	}
@@ -112,7 +112,7 @@ func main() {
 		}
 
 		// 4. 在html中添加浮层显示图片信息
-		newHtmlStr := addImageInfoOverlayToHTML(htmlStr, imgsInfo, filteredImgs, dataSrcRepeat)
+		newHtmlStr := addImageInfoOverlayToHTML(htmlStr, imgsInfo, filteredImgs, decodedDataSrcRepeat)
 
 		// 5. 检查xxx/update/目录是否存在，不存在则创建
 		if _, err := os.Stat(newDirectoryPath); os.IsNotExist(err) {
@@ -137,7 +137,7 @@ func main() {
 	}
 
 	// 将被需要被过滤的文件写入日志文件
-	err = writeFilteredImgsToJsonFile(allFilteredImgs, dataSrcRepeat, newFilePrefix, newDirectoryPath, newSubDir, filteredImgsJsonFileName, filteredImgsJsonHTMLName)
+	err = writeFilteredImgsToJsonFile(allFilteredImgs, decodedDataSrcRepeat, newFilePrefix, newDirectoryPath, newSubDir, filteredImgsJsonFileName, filteredImgsJsonHTMLName)
 	if err != nil {
 		fmt.Println(err)
 	} else {

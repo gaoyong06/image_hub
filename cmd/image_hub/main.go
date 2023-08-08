@@ -1,3 +1,11 @@
+/*
+ * @Author: gaoyong gaoyong06@qq.com
+ * @Date: 2023-03-25 12:17:17
+ * @LastEditors: gaoyong gaoyong06@qq.com
+ * @LastEditTime: 2023-08-08 14:43:44
+ * @FilePath: \image_hub\cmd\image_hub\main.go
+ * @Description:
+ */
 package main
 
 import (
@@ -79,15 +87,19 @@ func Init() error {
 func Run() {
 
 	extra := make(map[string]interface{})
-	// 计算目录下的html内的img标签重复的data-src
-	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(dir, 2)
-	fmt.Printf("dataSrcRepeat: %+v\n", dataSrcRepeat)
+
+	// 计算目录下的html内的img标签重复的decode后的data-src
+	decodedDataSrcRepeat, err := spiders.GetDecodedImageDataSrcRepeat(dir, 2)
+
+	// helper.GenerateHTML 会在D:/work/image_hub/test/目录下生成一个index-年月日时分秒.html的文件,用于观测重复图的内容
+	// helper.GenerateHTML("D:/work/image_hub/test/", dataSrcRepeat)
+
 	if err != nil {
 		panic(err)
 	}
 
 	// 将params.SectionDirtyImgDataSrc中定义需要过滤的图片,追加到dataSrcRepeat中一并参加过滤
-	filteredImgDataSrc := append(dataSrcRepeat, params.SectionDirtyImgDataSrc...)
+	filteredImgDataSrc := append(decodedDataSrcRepeat, params.SectionDirtyImgDataSrc...)
 
 	extra["filteredImgDataSrc"] = filteredImgDataSrc
 	// request local files

@@ -9,5 +9,5 @@ var SectionDirtyImgDataSrc = []string{
 	"https://mmbiz.qpic.cn/mmbiz_gif/myr7atqOsbJOOvrgzialOvWwYVNdhgYay9tSRwMvnvk3I2PQRv8qr4vW7c1smFicaEBuaicIwNgTecbAnTWRm7trQ/640",
 
 	//TODO: 这个不对,为什么没有通过重复图片把这个检测出来?
-	"https://mmbiz.qpic.cn/mmbiz_png/e6u7rIactyalTzFHnvuLtktqfQMUtD0ibZOSmQs7k7IpM1AhTjCGScXHJUuomR1MiaYlwrux7fmzxNmcx6t2uAZQ/640?wx_fmt=png&wx_lazy=1&wx_co=1",
+	// "https://mmbiz.qpic.cn/mmbiz_png/e6u7rIactyalTzFHnvuLtktqfQMUtD0ibZOSmQs7k7IpM1AhTjCGScXHJUuomR1MiaYlwrux7fmzxNmcx6t2uAZQ/640?wx_fmt=png&wx_lazy=1&wx_co=1",
 }

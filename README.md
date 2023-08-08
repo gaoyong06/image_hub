@@ -93,7 +93,20 @@ func (t *TblArticle) TableName() string {
  go run main.go -c ../../configs/config.yaml
 ```
 
+#### 工具
 
+1. 查看公众号内重复的图片
+```
+  // image_hub/cmd/image_hub/main.go 中
+  // helper.GenerateHTML 会在D:/work/image_hub/test/目录下生成一个index-年月日时分秒.html的文件,用于观测重复图的内容
+  helper.GenerateHTML("D:/work/image_hub/test/", dataSrcRepeat)
+```
+
+2. 查看公众号各个html的图片内容类型(这个工具目前不是特别的准确, 红框绿框可视化的部分没问题,但是检测内容类型的部分,还需优化)
+```
+  cd image_hub/cmd/image_border
+  go run main.go
+```
 
 
 #### 备忘

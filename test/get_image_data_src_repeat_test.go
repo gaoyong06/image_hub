@@ -13,7 +13,7 @@ func TestGetImageDataSrcRepeat(t *testing.T) {
 	// directoryPath := "D:/work/wechat_download_data/html/test6/"
 	directoryPath := "D:/work/wechat_download_data/html/test7/"
 
-	dataSrcRepeat, err := spiders.GetImageDataSrcRepeat(directoryPath, 2)
+	dataSrcRepeat, err := spiders.GetDecodedImageDataSrcRepeat(directoryPath, 2)
 
 	if err != nil {
 		panic(err)

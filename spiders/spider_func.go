@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-08 11:52:35
+ * @LastEditTime: 2023-08-08 14:35:31
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -211,7 +211,7 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, filteredImgDataSrc []string)
 			var src string
 			for _, attr := range n.Attr {
 				if attr.Key == "data-src" {
-					dataSrc = attr.Val
+					dataSrc = html.UnescapeString(attr.Val)
 				}
 
 				if attr.Key == "src" {
@@ -470,9 +470,9 @@ func InferImageTypeFromHTML(htmlUrl, htmlStr string) ([]map[string]interface{}, 
 }
 
 // 根据HTML文本提取所有图片的信息，并返回符合要求的图片信息及被过滤的图片信息
-// 读取directoryPath所有html的文件将各个文件中的img标签的data-src内的值取出来如果重复出现(出现次数大于1),则记录下来返回
+// 读取directoryPath所有html的文件将各个文件中的img标签的decode后的data-src内的值取出来如果重复出现(出现次数大于1),则记录下来返回
 // maxRepeated 记录重复的数量，如果大于maxRepeated则表示有重复的图片
-func GetImageDataSrcRepeat(directoryPath string, maxRepeated int) ([]string, error) {
+func GetDecodedImageDataSrcRepeat(directoryPath string, maxRepeated int) ([]string, error) {
 
 	if !strings.HasSuffix(directoryPath, "/") {
 		directoryPath = directoryPath + "/"
@@ -534,7 +534,11 @@ func GetImageDataSrcRepeat(directoryPath string, maxRepeated int) ([]string, err
 
 				lock.Lock()
 				for _, match := range dataSrcValues {
-					dataSrc := match[1]
+
+					// 有类似下面的链接&被转义为&amp;故这里统一做一次转码
+					// https://mmbiz.qpic.cn/mmbiz_png/e6u7rIactyalTzFHnvuLtktqfQMUtD0ibZOSmQs7k7IpM1AhTjCGScXHJUuomR1MiaYlwrux7fmzxNmcx6t2uAZQ/640?wx_fmt=png&wx_lazy=1&wx_co=1
+					// https://mmbiz.qpic.cn/mmbiz_png/e6u7rIactyalTzFHnvuLtktqfQMUtD0ibZOSmQs7k7IpM1AhTjCGScXHJUuomR1MiaYlwrux7fmzxNmcx6t2uAZQ/640?wx_fmt=png&amp;wx_lazy=1&amp;wx_co=1
+					dataSrc := html.UnescapeString(match[1])
 					dataSrcOccurrences[dataSrc]++
 				}
 				lock.Unlock()
