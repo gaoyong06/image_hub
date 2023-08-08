@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-03-25 12:17:17
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-08 14:43:44
+ * @LastEditTime: 2023-08-08 16:32:36
  * @FilePath: \image_hub\cmd\image_hub\main.go
  * @Description:
  */
@@ -23,6 +23,8 @@ import (
 
 	"image_hub/model"
 	"image_hub/params"
+
+	// "image_hub/pkg/helper"
 	"image_hub/spiders"
 
 	nested "github.com/antonfisher/nested-logrus-formatter"
@@ -92,7 +94,8 @@ func Run() {
 	decodedDataSrcRepeat, err := spiders.GetDecodedImageDataSrcRepeat(dir, 2)
 
 	// helper.GenerateHTML 会在D:/work/image_hub/test/目录下生成一个index-年月日时分秒.html的文件,用于观测重复图的内容
-	// helper.GenerateHTML("D:/work/image_hub/test/", dataSrcRepeat)
+	// helper.GenerateHTML("D:/work/image_hub/test/", decodedDataSrcRepeat)
+	// panic("====== STOP =======")
 
 	if err != nil {
 		panic(err)
