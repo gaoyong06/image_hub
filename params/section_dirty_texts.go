@@ -96,4 +96,5 @@ var SectionDirtyTexts = []string{
 	"建议WiFi下阅读",
 	"——五单",
 	"点下分享",
+	"恢复更新",
 }
