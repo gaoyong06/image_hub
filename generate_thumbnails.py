@@ -3,7 +3,7 @@
 Author: gaoyong gaoyong06@qq.com
 Date: 2023-08-12 21:39:38
 LastEditors: gaoyong gaoyong06@qq.com
-LastEditTime: 2023-08-12 21:57:00
+LastEditTime: 2023-08-13 08:38:54
 FilePath: \image_hub\generate_thumbnails.py
 Description: 生成缩略图
 '''
@@ -35,11 +35,18 @@ def process_directory(directory):
 # 生成缩略图并保存
 def generate_thumbnail(image_path):
     try:
+        # 检查缩略图是否已存在，若存在则跳过
+        thumbnail_path = get_thumbnail_path(image_path)
+        if os.path.exists(thumbnail_path):
+            logging.info(f'Skipping thumbnail generation (Already exists): {thumbnail_path}')
+            return
+
         image = Image.open(image_path)
         image.thumbnail(thumbnail_size)
+        image.convert('RGB')  # 将图像转换为RGB模式
         thumbnail_path = get_thumbnail_path(image_path)
         os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
-        image.save(thumbnail_path)
+        image.save(thumbnail_path, 'JPEG')  # 保存为JPEG格式
         logging.info(f'Generated thumbnail: {thumbnail_path}')
     except Exception as e:
         logging.error(f'Failed to generate thumbnail: {image_path} - {e}')

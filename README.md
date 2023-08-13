@@ -150,26 +150,26 @@ func (t *TblArticle) TableName() string {
 | 26 | Dump-0425-10-23-36 | 头像壁纸大全 | txbz001 | done |
 | 27 | Dump-0425-10-30-17 | 搞怪沙雕头像 | youtiaotaolu | done |
 | 28 | Dump-0425-10-35-23 | 头像记 | laixieee | done |
-| 29 | Dump-0425-10-38-12 | 头像酱呀 | bizhi1994 |  |
-| 30 | Dump-0425-10-42-59 | 头像文案 | fashionshijue |  |
-| 31 | Dump-0428-22-35-17 | 头像辑 | touxiangh |  |
-| 32 | Dump-0428-22-40-43 | 头像博主 | txbozhu |  |
-| 33 | Dump-0428-22-46-16 | 头像号 | remenyt |  |
-| 34 | Dump-0428-22-55-02 | 百合头像 | baihetouxiang |  |
-| 35 | Dump-0428-23-03-29 | 背景头像 | meaijiepai |  |
-| 36 | Dump-0429-18-36-56 | 头像录 | liaoshangbiji |  |
-| 37 | Dump-0429-18-40-36 | 头像哒 | gh_367e376abfe0 |  |
-| 38 | Dump-0429-18-44-47 | 女生头像宝藏集 | gh_a600aed1c30d |  |
-| 39 | Dump-0503-21-16-12 | 超火情侣头像 | chanxuehuiyu |  |
-| 40 | Dump-0504-10-02-15 | 头像社 | touxiangshe |  |
-| 41 | Dump-0505-23-31-52 | 头像壁纸每日推荐 | touxbizhimeiriTJ |  |
-| 42 | Dump-0507-10-40-20 | 搞怪头像大全 | gh_089775ff1457 |  |
-| 43 | Dump-0507-12-39-56 | 头像微甜 | txwt-sweet |  |
-| 44 | Dump-0508-00-15-59 | 女生头像壁纸 | nvshengtouxiang1 |  |
-| 45 | Dump-0508-08-18-06 | ULzzang头像 | Ins-face |  |
-| 46 | Dump-0508-08-21-43 | 头像书 | Txs5665 |  |
-| 47 | Dump-0508-08-24-32 | 头像大全丫 | wulai969 |  |
-| 48 | Dump-0509-09-13-18 | 可爱萌娃头像大全 | mwtx66695 |  |
+| 29 | Dump-0425-10-38-12 | 头像酱呀 | bizhi1994 | done |
+| 30 | Dump-0425-10-42-59 | 头像文案 | fashionshijue | done |
+| 31 | Dump-0428-22-35-17 | 头像辑 | touxiangh | done |
+| 32 | Dump-0428-22-40-43 | 头像博主 | txbozhu | done |
+| 33 | Dump-0428-22-46-16 | 头像号 | remenyt | done |
+| 34 | Dump-0428-22-55-02 | 百合头像 | baihetouxiang | done |
+| 35 | Dump-0428-23-03-29 | 背景头像 | meaijiepai | done |
+| 36 | Dump-0429-18-36-56 | 头像录 | liaoshangbiji | done |
+| 37 | Dump-0429-18-40-36 | 头像哒 | gh_367e376abfe0 | done |
+| 38 | Dump-0429-18-44-47 | 女生头像宝藏集 | gh_a600aed1c30d | done |
+| 39 | Dump-0503-21-16-12 | 超火情侣头像 | chanxuehuiyu | done |
+| 40 | Dump-0504-10-02-15 | 头像社 | touxiangshe | done |
+| 41 | Dump-0505-23-31-52 | 头像壁纸每日推荐 | touxbizhimeiriTJ | done |
+| 42 | Dump-0507-10-40-20 | 搞怪头像大全 | gh_089775ff1457 | done |
+| 43 | Dump-0507-12-39-56 | 头像微甜 | txwt-sweet | done |
+| 44 | Dump-0508-00-15-59 | 女生头像壁纸 | nvshengtouxiang1 | done |
+| 45 | Dump-0508-08-18-06 | ULzzang头像 | Ins-face | done |
+| 46 | Dump-0508-08-21-43 | 头像书 | Txs5665 | done |
+| 47 | Dump-0508-08-24-32 | 头像大全丫 | wulai969 | done |
+| 48 | Dump-0509-09-13-18 | 可爱萌娃头像大全 | mwtx66695 | done |
 | 49 | Dump-0509-09-18-51 | 萌娃头像库 | gh_bb13ee258433 |  |
 | 50 | Dump-0509-09-20-43 | 可爱萌娃头像 | bqv8897 |  |
 | 51 | Dump-0509-09-23-59 | 丸子妹头像 | bq6691 |  |
