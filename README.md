@@ -29,6 +29,10 @@ imageHub是一个图片内容源服务，主要服务 content_service 的内容�
 
 9. 通过onePageSpider.Process调用base_spider.go中的Process方法将上述解析到的Article和sections保存到db,支持重复覆盖方式写入
 
+10. 如果没有定制的处理程序,将使用默认的公众号处理程序wechat_simple.go来解析数据
+
+11. 解析后的数据写入image_hub.tbl_article数据表
+
 
 #### 新公众号内容导入步骤(新方法)
 ```
