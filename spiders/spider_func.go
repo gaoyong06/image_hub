@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-08 14:35:31
+ * @LastEditTime: 2023-09-11 06:03:33
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -637,47 +637,34 @@ func replaceTextBlank(sections []model.Section) []model.Section {
 }
 
 // 合并sections中的section.ImageUrls
-// 如果sections内image_urls都只有两个图片,将每4个sections内的item合并成一个, 删掉被合并的item， 合并后sections内item的image_urls都是8张图片,最后一个可能会小于8张图
+// 如果sections中sections[i]内的ImageUrls数量小于4时，将它与相邻的下一个sections[i+1]合并为一个，并继续检查sections[i+1]内的ImageUrls数量，直到ImageUrls数量大于或等于4。合并后，每个sections[i]内的ImageUrls数量都将大于或等于4
 func mergeImageUrls(sections []model.Section) []model.Section {
+	mergedSections := []model.Section{}
+	i := 0
 
-	// 是否所有的section内都只有两张图片
-	allTwoImages := true
-	for i := 0; i < len(sections); i++ {
-		if allTwoImages && len(sections[i].ImageUrls) > 2 {
-			allTwoImages = false
+	for i < len(sections) {
+		imageUrls := sections[i].ImageUrls
+
+		for len(imageUrls) < 4 {
+			if i+1 >= len(sections) {
+				break
+			}
+
+			nextSection := sections[i+1]
+			imageUrls = append(imageUrls, nextSection.ImageUrls...)
+			i++
 		}
-	}
 
-	// 如果sections内image_urls都只有两个图片,将每4个sections内的item合并成一个, 删掉被合并的item
-	if allTwoImages {
-		// 计算需要添加的额外item数量
-		extraItems := 4 - (len(sections) % 4)
-
-		// 添加额外的空item
-		for i := 0; i < extraItems; i++ {
-			sections = append(sections, model.Section{
-				ImageUrls: []string{},
+		if len(imageUrls) >= 4 {
+			mergedSections = append(mergedSections, model.Section{
+				Idx:       i + 1,
+				Text:      sections[i].Text,
+				ImageUrls: imageUrls,
 			})
 		}
 
-		// 创建新的sections数组来保存合并后的结果
-		mergedSections := []model.Section{}
-
-		// 合并每4个sections内的item
-		for i := 0; i < len(sections); i += 4 {
-			imageUrls := sections[i].ImageUrls
-			imageUrls = append(imageUrls, sections[i+1].ImageUrls...)
-			imageUrls = append(imageUrls, sections[i+2].ImageUrls...)
-			imageUrls = append(imageUrls, sections[i+3].ImageUrls...)
-			sections[i].ImageUrls = imageUrls
-
-			// 将合并后的item添加到新的mergedSections数组中
-			mergedSections = append(mergedSections, sections[i])
-		}
-
-		// 更新sections为合并后的结果
-		sections = mergedSections
+		i++
 	}
 
-	return sections
+	return mergedSections
 }
