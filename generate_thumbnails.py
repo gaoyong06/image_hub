@@ -3,9 +3,9 @@
 Author: gaoyong gaoyong06@qq.com
 Date: 2023-08-12 21:39:38
 LastEditors: gaoyong gaoyong06@qq.com
-LastEditTime: 2023-08-13 08:38:54
+LastEditTime: 2023-09-11 09:00:38
 FilePath: \image_hub\generate_thumbnails.py
-Description: 生成缩略图
+Description: 生成图片缩略图(Gif图不做处理)
 '''
 import os
 import concurrent.futures
@@ -20,7 +20,7 @@ image_dir = 'D:/work/wechat_download_data/images'
 thumbnail_dir = 'D:/work/wechat_download_data/thumbnails'
 
 # 定义生成缩略图的大小
-thumbnail_size = (200, 200)
+thumbnail_size = (400, 400)
 
 # 递归遍历目录下的所有图片文件
 def process_directory(directory):
@@ -32,7 +32,7 @@ def process_directory(directory):
             # 生成缩略图并保存到对应目录
             generate_thumbnail(filepath)
 
-# 生成缩略图并保存
+# 生成缩略图并保存为 WebP 格式
 def generate_thumbnail(image_path):
     try:
         # 检查缩略图是否已存在，若存在则跳过
@@ -42,11 +42,19 @@ def generate_thumbnail(image_path):
             return
 
         image = Image.open(image_path)
+
+        if image.format == 'GIF':
+            # GIF 图片保持不变
+            logging.info(f'Skipping thumbnail generation (GIF format): {image_path}')
+            return
+
+        # 非 GIF 格式，转为 WebP 格式
         image.thumbnail(thumbnail_size)
-        image.convert('RGB')  # 将图像转换为RGB模式
+        image = image.convert('RGB')
         thumbnail_path = get_thumbnail_path(image_path)
         os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
-        image.save(thumbnail_path, 'JPEG')  # 保存为JPEG格式
+        image.save(thumbnail_path, 'WEBP')
+
         logging.info(f'Generated thumbnail: {thumbnail_path}')
     except Exception as e:
         logging.error(f'Failed to generate thumbnail: {image_path} - {e}')
@@ -54,7 +62,8 @@ def generate_thumbnail(image_path):
 # 根据图片路径获取对应的缩略图路径
 def get_thumbnail_path(image_path):
     relative_path = os.path.relpath(image_path, image_dir)
-    return os.path.join(thumbnail_dir, relative_path)
+    thumbnail_filename, _ = os.path.splitext(relative_path)
+    return os.path.join(thumbnail_dir, f'{thumbnail_filename}.webp')
 
 # 处理单个图片文件
 def process_image_file(image_path):
