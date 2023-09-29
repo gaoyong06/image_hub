@@ -14,7 +14,9 @@ import (
 )
 
 var (
-	DB *gorm.DB
+	// 数据库连接
+	DB           *gorm.DB
+	contentNerDB *gorm.DB
 
 	HostDefault     string = "127.0.0.1"
 	PortDefault     string = "3306"
@@ -24,6 +26,20 @@ var (
 )
 
 func Init() {
+
+	var err error
+	DB, err = openDB("default")
+	if err != nil {
+		panic(fmt.Sprintf("openDB default failed. error: %s\n", err))
+	}
+
+	contentNerDB, err = openDB("content_ner_db")
+	if err != nil {
+		panic(fmt.Sprintf("openDB default failed. error: %s\n", err))
+	}
+}
+
+func openDB(dbConfig string) (*gorm.DB, error) {
 
 	var err error
 	logger := logger.New(
@@ -43,8 +59,8 @@ func Init() {
 	}
 
 	// dns := username:password@tcp(host:port)/dbname?charset=utf8&parseTime=True&loc=Local
-	dns := getDns("default")
-	DB, err = gorm.Open(mysql.Open(dns), &gorm.Config{
+	dns := getDns(dbConfig)
+	db, err := gorm.Open(mysql.Open(dns), &gorm.Config{
 		Logger:         logger,
 		NamingStrategy: namingStrategy,
 	})
@@ -54,7 +70,7 @@ func Init() {
 
 	// https://gorm.cn/zh_CN/docs/generic_interface.html
 	// 获取通用数据库对象 sql.DB ，然后使用其提供的功能
-	sqlDB, err := DB.DB()
+	sqlDB, err := db.DB()
 	if err != nil {
 		panic(fmt.Sprintf("model init db.DB failed. error: %s\n", err))
 	}
@@ -67,6 +83,8 @@ func Init() {
 
 	// SetConnMaxLifetime 设置了连接可复用的最大时间。
 	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	return db, nil
 }
 
 func getDns(name string) string {

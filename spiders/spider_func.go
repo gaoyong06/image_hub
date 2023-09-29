@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-09-11 06:03:33
+ * @LastEditTime: 2023-09-29 11:46:13
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -155,6 +155,8 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, filteredImgDataSrc []string)
 	sectionIdx := 0
 	var sections []model.Section
 
+	tblImageCaption := model.GetTblImageCaption()
+
 	// 推测的获取不符合规则(不是头像，背景图，壁纸，表情包规范)的图片
 	var filteredImgSrcs []string
 	var filteredImgs map[string]map[string]interface{}
@@ -215,14 +217,21 @@ func ParseSectionsFromHTML(htmlUrl, htmlStr string, filteredImgDataSrc []string)
 				}
 
 				if attr.Key == "src" {
-
-					src = attr.Val
+					// 对src中的反斜杠进行处理
+					src = strings.ReplaceAll(attr.Val, "\\", "/")
 				}
 			}
 
 			// 如果同一个图片在多个网页中重复出现，则可能是宣传图，过滤掉
 			if utils.Contains(filteredImgDataSrc, dataSrc) {
 				fmt.Printf("========================= filteredImgDataSrc. src: %s\n", src)
+				return true
+			}
+
+			// 判断是不是二维码或者广告
+			isValidImage := tblImageCaption.IsValidImage(src)
+			if !isValidImage {
+				fmt.Printf("is NOT valid image. src: %s\n", src)
 				return true
 			}
 
