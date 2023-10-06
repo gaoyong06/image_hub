@@ -133,7 +133,7 @@ func (t *TblArticle) TableName() string {
 | 5 | Dump-0422-21-05-01 | 元気头像 | NiceWallpaper |  |
 | 6 | Dump-0423-11-39-39 | 头像库 | touxiangcool |  |
 | 7 | Dump-0423-12-06-34 | 头像文案 | fashionshijue |  |
-| 8 | Dump-0423-19-16-40 | 你的小众头像 | h13031h |  |
+| 8 | Dump-0423-19-16-40 | 你的小众头像 | h13031h | done |
 | 9 | Dump-0423-19-23-35 | 换头像bo | htxb888 | done |
 | 10 | Dump-0423-19-29-57 | 每日新头像 | gh_75640868571b |  |
 | 11 | Dump-0423-19-36-06 | 头像备忘录 | DNTX9527 |  |
@@ -149,15 +149,15 @@ func (t *TblArticle) TableName() string {
 | 21 | Dump-0425-09-08-48 | 女生头像壁纸控 | touxiangdiss1 |  |
 | 22 | Dump-0425-09-28-30 | 头像先生 | J79938 |   |
 | 23 | Dump-0425-10-08-29 | 头像味 | gh_bc125df08550 |  |
-| 24 | Dump-0425-10-14-07 | 小怪兽头像 | gh_97a6f9e34972 |  |
-| 25 | Dump-0425-10-20-23 | 二次元头像集 | cpdd52199 |  |
+| 24 | Dump-0425-10-14-07 | 小怪兽头像 | gh_97a6f9e34972 | done |
+| 25 | Dump-0425-10-20-23 | 二次元头像集 | cpdd52199 | done |
 | 26 | Dump-0425-10-23-36 | 头像壁纸大全 | txbz001 |  |
 | 27 | Dump-0425-10-30-17 | 搞怪沙雕头像 | youtiaotaolu |  |
 | 28 | Dump-0425-10-35-23 | 头像记 | laixieee |  |
 | 29 | Dump-0425-10-38-12 | 头像酱呀 | bizhi1994 |  |
 | 30 | Dump-0425-10-42-59 | 头像文案 | fashionshijue |  |
 | 31 | Dump-0428-22-35-17 | 头像辑 | touxiangh |  |
-| 32 | Dump-0428-22-40-43 | 头像博主 | txbozhu |  |
+| 32 | Dump-0428-22-40-43 | 头像博主 | txbozhu | done |
 | 33 | Dump-0428-22-46-16 | 头像号 | remenyt |  |
 | 34 | Dump-0428-22-55-02 | 百合头像 | baihetouxiang |  |
 | 35 | Dump-0428-23-03-29 | 背景头像 | meaijiepai |  |

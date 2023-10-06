@@ -3,7 +3,7 @@
 Author: gaoyong gaoyong06@qq.com
 Date: 2023-08-12 21:39:38
 LastEditors: gaoyong gaoyong06@qq.com
-LastEditTime: 2023-09-11 09:00:38
+LastEditTime: 2023-09-12 06:38:46
 FilePath: \image_hub\generate_thumbnails.py
 Description: 生成图片缩略图(Gif图不做处理)
 '''
@@ -44,7 +44,7 @@ def generate_thumbnail(image_path):
         image = Image.open(image_path)
 
         if image.format == 'GIF':
-            # GIF 图片保持不变
+            # GIF 图片保持不变 
             logging.info(f'Skipping thumbnail generation (GIF format): {image_path}')
             return
 
