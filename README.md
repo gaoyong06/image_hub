@@ -36,7 +36,7 @@ imageHub是一个图片内容源服务，主要服务 content_service 的内容�
 
 #### 新公众号内容导入步骤(新方法)
 ```
-go run main.go -c ../../configs/config.yaml -d D:/work/wechat_download_data/html/Dump-0512-23-46-10/
+go run main.go -c ../../configs/config.yaml -d D:/work/wechat_download_data/html/Dump-0422-20-12-37/
 ```
 
 1. 上面这个命令会自动在image_hub库中字段创建公众号对应的数据表，如果数据表不存在的话
