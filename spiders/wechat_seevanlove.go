@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date: 2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-08-03 17:13:28
+ * @LastEditTime: 2023-10-06 18:14:26
  * @FilePath: \image_hub\spiders\wechat_seevanlove.go
  * @Description: 微信号自定义处理函数-情侣头像原创榜
  */
@@ -47,5 +47,9 @@ func seevanlove_1(_ *model.TblArticle, sections []model.Section) []model.Section
 			i-- // compensate for the removed element by decrementing the index
 		}
 	}
+
+	// 如果sections中sections[i]内的ImageUrls数量小于4时，将它与相邻的下一个sections[i+1]合并为一个，并继续检查sections[i+1]内的ImageUrls数量，直到ImageUrls数量大于或等于4。合并后，每个sections[i]内的ImageUrls数量都将大于或等于4
+	sections = mergeImageUrls(sections)
+
 	return sections
 }
