@@ -6,7 +6,7 @@
 # tbl_article和tbl_article_后缀 数据表的字段都是相同的，当出现写入tbl_article时，出现主键相同的重复记录时，则用所以新的所有字段值覆盖旧的所有字段值
 
 # MySQL connection information
-host="192.168.1.5"
+host="192.168.1.4"
 port="3306"
 user="root"
 passwd="root"
