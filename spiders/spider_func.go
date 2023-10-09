@@ -2,7 +2,7 @@
  * @Author: gaoyong gaoyong06@qq.com
  * @Date:2023-04-21 18:43:56
  * @LastEditors: gaoyong gaoyong06@qq.com
- * @LastEditTime: 2023-09-29 11:46:13
+ * @LastEditTime: 2023-10-09 17:16:09
  * @FilePath: \image_hub\spiders\func_map.go
  * @Description: 爬虫相关公用方法
  */
@@ -595,8 +595,18 @@ func filterDirtyText(sections []model.Section) []model.Section {
 	if len(sections) > 0 {
 		for i := len(sections) - 1; i >= 0; i-- {
 			if len(sections[i].Text) > 0 {
-				for _, dirtyText := range params.SectionDirtyTexts {
+
+				// 包含需要过滤的词
+				for _, dirtyText := range params.SectionTextsContainDirty {
 					if strings.Contains(sections[i].Text, dirtyText) {
+						sections[i].Text = ""
+						break
+					}
+				}
+
+				// 等于需要过滤的词
+				for _, dirtyText := range params.SectionTextsIsDirty {
+					if sections[i].Text == dirtyText {
 						sections[i].Text = ""
 						break
 					}
