@@ -464,6 +464,8 @@ var SectionTextsContainDirty = []string{
 	"扫码",
 	"左右滑动",
 	"头像集",
+	"长按图片保存手机",
+	"热门头像",
 }
 
 // 完全相同
@@ -490,4 +492,6 @@ var SectionTextsIsDirty = []string{
 	"女",
 	"推",
 	"整理！",
+	"设计稿的绘制步骤以及变现等",
+	"壁紙库",
 }
